@@ -132,6 +132,9 @@ uchar default_environment[] = {
 #ifdef CONFIG_RD_LOADADDR
 	"rd_loadaddr="  MK_STR(CONFIG_RD_LOADADDR)	"\0"
 #endif
+#ifdef CONFIG_RD_SIZE
+	"rd_size=" 	MK_STR(CONFIG_RD_SIZE)		"\0"
+#endif
 #ifdef  CONFIG_CLOCKS_IN_MHZ
 	"clocks_in_mhz=1\0"
 #endif
