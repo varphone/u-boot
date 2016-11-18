@@ -586,6 +586,16 @@ config TARGET_MYIMX6EK314
 	select CPU_V7
 	select SUPPORT_SPL
 
+config TARGET_MYIMX6ACO
+	bool "Support myimx6aco"
+	select CPU_V7
+	select SUPPORT_SPL
+
+config TARGET_MYIMX6EK140
+	bool "Support myimx6ek140"
+	select CPU_V7
+	select SUPPORT_SPL
+
 config TARGET_GW_VENTANA
 	bool "Support gw_ventana"
 	select CPU_V7
