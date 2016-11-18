@@ -136,32 +136,45 @@
 #define CONFIG_CMD_IMX_DOWNLOAD_MODE
 #define BOOTARGS_VIDEO				"video=mxcfb0:dev=ldb,LDB-1024X600,if=RGB666"
 
-#define	CONFIG_EXTRA_ENV_SETTINGS					\
-		"netdev=eth0\0"						\
-		"ethprime=FEC0\0"					\
-		"uboot=uboot-"EK_NAME"-"MYIMX6EK_SPEC".bin\0"			\
-		"kernel=/boot/uImage\0"				\
-		"initrd=/boot/initrd.cpio.gz\0"\
-		"nfsroot=/home/myzr/srv/nfs/rootfs\0"				\
-		"bootargs_base=setenv bootargs "BOOTARGS_BASE" "BOOTARGS_VIDEO"\0"\
-		"bootargs_mmc=setenv bootargs ${bootargs} initrd=${rd_loadaddr},${rd_size} ip=none "     \
-			"root=/dev/mmcblk0p2 ro rootfstype=ext4 overlayroot=/dev/mmcblk0p3:rw:ext4 rootwait\0"                \
-		"bootcmd_tftp=run bootargs_base bootargs_mmc; "		\
-			"tftpboot ${loadaddr} ${kernel}; bootm\0"	\
-		"bootargs_nfs=setenv bootargs ${bootargs} root=/dev/nfs "\
-			"ip=${ipaddr} nfsroot=${serverip}:${nfsroot},v3,tcp\0"\
-		"bootcmd_net=run bootargs_base bootargs_nfs; "		\
-			"tftpboot ${loadaddr} ${kernel}; bootm\0"	\
-		"bootcmd_mmc=run bootargs_base bootargs_mmc; "   \
-			"mmc dev 2; "\
-			"ext4load mmc 2:2 ${loadaddr} ${kernel}; "\
-			"ext4load mmc 2:2 ${rd_loadaddr} ${initrd}; "\
-			"bootm ${loadaddr}\0"	\
-		"bootcmd=run bootcmd_mmc\0"                             \
-		"update_uboot=tftpboot ${loadaddr} ${uboot}; "SF_PROBE_CMD"; sf erase 0 0x200000; sf write ${loadaddr} 0 0x80000\0"	  \
-		"update_uImage=tftpboot ${loadaddr} ${kernel}; mmc dev 2; mmc write ${loadaddr} 0x800 0x2000\0" \
-		"splashimage="SPLASHIMAGE"\0"	\
-		"splashpos=m,m\0"	\
+#define	CONFIG_EXTRA_ENV_SETTINGS 							\
+		"netdev=eth0\0" 							\
+		"ethprime=FEC0\0" 							\
+		"uboot=uboot-"EK_NAME"-"MYIMX6EK_SPEC".bin\0" 				\
+		"kernel=/boot/uImage\0" 						\
+		"initrd=/boot/initrd.cpio.gz\0" 					\
+		"nfsroot=/home/myzr/srv/nfs/rootfs\0" 					\
+		"bootargs_base=setenv bootargs "BOOTARGS_BASE" "BOOTARGS_VIDEO"\0" 	\
+		"bootargs_mmc=setenv bootargs ${bootargs} " 				\
+			"initrd=${rd_loadaddr},${rd_size} "				\
+			"ip=none " 							\
+			"root=/dev/mmcblk0p2 ro rootfstype=ext4 " 			\
+			"overlayroot=/dev/mmcblk0p3:rw:ext4 rootwait\0"                	\
+		"bootargs_mmc_initrd=setenv bootargs ${bootargs} "			\
+			"initrd=${rd_loadaddr},${rd_size} "				\
+			"root=/dev/ram0 " 						\
+		"bootcmd_tftp=run bootargs_base bootargs_mmc; " 			\
+			"tftpboot ${loadaddr} ${kernel}; bootm\0" 			\
+		"bootargs_nfs=setenv bootargs ${bootargs} root=/dev/nfs " 		\
+			"ip=${ipaddr} nfsroot=${serverip}:${nfsroot},v3,tcp\0" 		\
+		"bootcmd_net=run bootargs_base bootargs_nfs; " 				\
+			"tftpboot ${loadaddr} ${kernel}; bootm\0" 			\
+		"bootcmd_mmc=run bootargs_base bootargs_mmc; " 				\
+			"mmc dev 2; "							\
+			"ext4load mmc 2:2 ${loadaddr} ${kernel}; "			\
+			"ext4load mmc 2:2 ${rd_loadaddr} ${initrd}; "			\
+			"bootm ${loadaddr}\0"						\
+		"bootcmd_mmc_initrd=run bootargs_base bootargs_mmc_initrd; " 		\
+			"mmc dev 2; "							\
+			"ext4load mmc 2:2 ${loadaddr} ${kernel}; "			\
+			"ext4load mmc 2:2 ${rd_loadaddr} ${initrd}; "			\
+			"bootm ${loadaddr}\0"						\
+		"bootcmd=run bootcmd_mmc\0"                             		\
+		"update_uboot=tftpboot ${loadaddr} ${uboot}; "SF_PROBE_CMD"; "		\
+			"sf erase 0 0x200000; sf write ${loadaddr} 0 0x80000\0"	  	\
+		"update_uImage=tftpboot ${loadaddr} ${kernel}; "			\
+			"mmc dev 2; mmc write ${loadaddr} 0x800 0x2000\0" 		\
+		"splashimage="SPLASHIMAGE"\0"						\
+		"splashpos=m,m\0"							\
 		"lvds_num=1\0"
 #endif
 /* ************************************************************************** */
