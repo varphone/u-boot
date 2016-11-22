@@ -22,38 +22,38 @@
 
 #if defined(CONFIG_SECURE_BOOT)
 #if !defined(CONFIG_CSF_SIZE)
-#define CONFIG_CSF_SIZE 0x4000
+#define CONFIG_CSF_SIZE 			0x4000
 #endif
 #endif
 
 #if defined(CONFIG_TARGET_MYIMX6EK200)
 #define CONFIG_MYIMX6CB200
 #define CONFIG_MYIMX6MB200
-#define CONFIG_BOARD_NAME	"myimx6ek200"
-#define CONFIG_MACH_TYPE	7462
+#define CONFIG_BOARD_NAME 			"myimx6ek200"
+#define CONFIG_MACH_TYPE			7462
 #elif defined(CONFIG_TARGET_MYIMX6EK314)
 #define CONFIG_MYIMX6CB314
 #define CONFIG_MYIMX6MB314
-#define CONFIG_BOARD_NAME	"myimx6ek314"
-#define CONFIG_MACH_TYPE	7463
+#define CONFIG_BOARD_NAME			"myimx6ek314"
+#define CONFIG_MACH_TYPE			7463
 #elif defined(CONFIG_TARGET_MYIMX6EK336)
 #define CONFIG_MYIMX6CB336
 #define CONFIG_MYIMX6MB314
-#define CONFIG_BOARD_NAME	"myimx6ek336"
-#define CONFIG_MACH_TYPE	7464
+#define CONFIG_BOARD_NAME			"myimx6ek336"
+#define CONFIG_MACH_TYPE			7464
 #elif defined(CONFIG_TARGET_MYIMX6ACO)
 #define CONFIG_MYIMX6CB314
 #define CONFIG_MYIMX6MBACO
-#define CONFIG_BOARD_NAME	"myimx6aco"
-#define CONFIG_MACH_TYPE	7465
+#define CONFIG_BOARD_NAME			"myimx6aco"
+#define CONFIG_MACH_TYPE			7465
 #elif defined(CONFIG_TARGET_MYIMX6LEF)
-#define CONFIG_BOARD_NAME	"myimx6lef"
-#define CONFIG_MACH_TYPE	7466
+#define CONFIG_BOARD_NAME			"myimx6lef"
+#define CONFIG_MACH_TYPE			7466
 #elif defined(CONFIG_TARGET_MYIMX6QJH)
 #define CONFIG_MYIMX6CB336
 #define CONFIG_MYIMX6MBQJH
-#define CONFIG_BOARD_NAME	"myimx6qjh"
-#define CONFIG_MACH_TYPE	7467
+#define CONFIG_BOARD_NAME			"myimx6qjh"
+#define CONFIG_MACH_TYPE			7467
 #endif
 
 #define CONFIG_ARM_ERRATA_743622
@@ -66,7 +66,7 @@
 
 #if !defined(CONFIG_SYS_L2CACHE_OFF)
 #define CONFIG_SYS_L2_PL310
-#define CONFIG_SYS_PL310_BASE		L2_PL310_BASE
+#define CONFIG_SYS_PL310_BASE			L2_PL310_BASE
 #endif
 
 #define CONFIG_MP
@@ -85,11 +85,11 @@
 #define CONFIG_REVISION_TAG
 
 #define CONFIG_SYS_GENERIC_BOARD
-#define CONFIG_SYS_MALLOC_LEN		(16 * SZ_1M)
+#define CONFIG_SYS_MALLOC_LEN			(16 * SZ_1M)
 
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
+#define CONFIG_SYS_PROMPT_HUSH_PS2		"> "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE			1024
 
@@ -102,12 +102,12 @@
 #define CONFIG_STACKSIZE			(128 * 1024)
 
 /* Memory ******************************************************************* */
-#define CONFIG_NR_DRAM_BANKS		1
-#define PHYS_SDRAM					MMDC0_ARB_BASE_ADDR
+#define CONFIG_NR_DRAM_BANKS			1
+#define PHYS_SDRAM				MMDC0_ARB_BASE_ADDR
 
-#define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM
-#define CONFIG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
-#define CONFIG_SYS_INIT_RAM_SIZE	IRAM_SIZE
+#define CONFIG_SYS_SDRAM_BASE			PHYS_SDRAM
+#define CONFIG_SYS_INIT_RAM_ADDR		IRAM_BASE_ADDR
+#define CONFIG_SYS_INIT_RAM_SIZE		IRAM_SIZE
 
 #define CONFIG_SYS_INIT_SP_OFFSET	\
 	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
@@ -118,7 +118,7 @@
 #define CONFIG_MXC_UART
 #define CONFIG_CONS_INDEX			1
 #define CONFIG_BAUDRATE				115200
-#define CONFIG_MXC_UART_BASE		UART1_BASE
+#define CONFIG_MXC_UART_BASE			UART1_BASE
 
 /* SPI ********************************************************************** */
 #define CONFIG_SYS_BOOT_SPINOR
@@ -132,27 +132,27 @@
 #define CONFIG_SPI_FLASH
 #define CONFIG_SPI_FLASH_SST
 #define CONFIG_MXC_SPI
-#define CONFIG_SF_DEFAULT_BUS		0
+#define CONFIG_SF_DEFAULT_BUS			0
 #if (defined(CONFIG_MYIMX6CB200) || defined(CONFIG_CB314_IS_V10) \
 	 || defined(CONFIG_TARGET_MYIMX6LEF))
-#define CONFIG_SF_DEFAULT_CS		1
+#define CONFIG_SF_DEFAULT_CS			1
 #elif (defined(CONFIG_MYIMX6CB314) || defined(CONFIG_MYIMX6CB336))
-#define CONFIG_SF_DEFAULT_CS		0
+#define CONFIG_SF_DEFAULT_CS			0
 #endif
-#define CONFIG_SF_DEFAULT_SPEED		20000000
-#define CONFIG_SF_DEFAULT_MODE		(SPI_MODE_0)
+#define CONFIG_SF_DEFAULT_SPEED 		20000000
+#define CONFIG_SF_DEFAULT_MODE			(SPI_MODE_0)
 #endif
 
 #if defined(CONFIG_ENV_IS_IN_SPI_FLASH)
 #define CONFIG_ENV_OFFSET			(768 * 1024)
-#define CONFIG_ENV_SECT_SIZE		(64 * 1024)
+#define CONFIG_ENV_SECT_SIZE			(64 * 1024)
 #define CONFIG_ENV_SPI_BUS			CONFIG_SF_DEFAULT_BUS
 #define CONFIG_ENV_SPI_CS			CONFIG_SF_DEFAULT_CS
 #define CONFIG_ENV_SPI_MODE			CONFIG_SF_DEFAULT_MODE
-#define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
+#define CONFIG_ENV_SPI_MAX_HZ			CONFIG_SF_DEFAULT_SPEED
 #endif
 
-#define CONFIG_ENV_SIZE				(8 * 1024)
+#define CONFIG_ENV_SIZE 			(8 * 1024)
 
 /* Network ****************************************************************** */
 #define CONFIG_CMD_PING
@@ -167,31 +167,32 @@
 
 #if defined(CONFIG_TARGET_MYIMX6EK200)
 #define CONFIG_FEC_XCV_TYPE			RMII
-#define CONFIG_FEC_MXC_PHYADDR		0
+#define CONFIG_FEC_MXC_PHYADDR			0
 #define CONFIG_FEC_ENET_DEV			0
 #define CONFIG_PHY_SMSC
 #elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6EK336) \
 	|| defined(CONFIG_TARGET_MYIMX6ACO) || defined(CONFIG_TARGET_MYIMX6LEF) \
 	|| defined(CONFIG_TARGET_MYIMX6QJH))
 #define CONFIG_FEC_XCV_TYPE			RGMII
-#define CONFIG_FEC_MXC_PHYADDR		6
+#define CONFIG_FEC_MXC_PHYADDR			6
 #define CONFIG_PHY_MICREL
 #define CONFIG_PHY_MICREL_KSZ9031
 #endif
 
-#define CONFIG_SERVERIP				192.168.18.18
-#define CONFIG_IPADDR				192.168.18.81
+#define CONFIG_SERVERIP    			192.168.0.7
+#define CONFIG_IPADDR    			192.168.1.99
+#define CONFIG_NETMASK    			255.255.0.0
 
 #define CONFIG_ARP_TIMEOUT			200UL
 
 /* SDHC ********************************************************************* */
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
-#define CONFIG_SYS_FSL_ESDHC_ADDR	0
+#define CONFIG_SYS_FSL_ESDHC_ADDR		0
 
-#define CONFIG_SYS_FSL_USDHC_NUM	2
-#define CONFIG_SYS_MMC_ENV_DEV		1	/* SDHC4 */
-#define CONFIG_SYS_MMC_ENV_PART		0   /* user partition */
+#define CONFIG_SYS_FSL_USDHC_NUM		2
+#define CONFIG_SYS_MMC_ENV_DEV			1 /* SDHC4 */
+#define CONFIG_SYS_MMC_ENV_PART 		0 /* user partition */
 
 #define CONFIG_MMC
 #define CONFIG_CMD_MMC
@@ -212,17 +213,17 @@
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
-#define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
-#define CONFIG_MXC_USB_FLAGS		0
-#define CONFIG_USB_MAX_CONTROLLER_COUNT	1 /* Enabled USB controller number */
+#define CONFIG_MXC_USB_PORTSC			(PORT_PTS_UTMI | PORT_PTS_PTW)
+#define CONFIG_MXC_USB_FLAGS			0
+#define CONFIG_USB_MAX_CONTROLLER_COUNT    	1 /* Enabled USB controller number */
 #endif
 
 /* SATA ********************************************************************* */
 #if defined(CONFIG_CMD_SATA)
 #define CONFIG_DWC_AHSATA
-#define CONFIG_SYS_SATA_MAX_DEVICE	1
-#define CONFIG_DWC_AHSATA_PORT_ID	0
-#define CONFIG_DWC_AHSATA_BASE_ADDR	SATA_ARB_BASE_ADDR
+#define CONFIG_SYS_SATA_MAX_DEVICE		1
+#define CONFIG_DWC_AHSATA_PORT_ID		0
+#define CONFIG_DWC_AHSATA_BASE_ADDR		SATA_ARB_BASE_ADDR
 #define CONFIG_LBA48
 #define CONFIG_LIBATA
 #endif
@@ -233,12 +234,12 @@
 #define CONFIG_PCI_PNP
 #define CONFIG_PCI_SCAN_SHOW
 #define CONFIG_PCIE_IMX
-#define CONFIG_PCIE_IMX_POWER_GPIO	IMX_GPIO_NR(6, 8)
+#define CONFIG_PCIE_IMX_POWER_GPIO		IMX_GPIO_NR(6, 8)
 #if defined(CONFIG_TARGET_MYIMX6EK200)
-#define CONFIG_PCIE_IMX_PERST_GPIO	IMX_GPIO_NR(6, 7)
+#define CONFIG_PCIE_IMX_PERST_GPIO		IMX_GPIO_NR(6, 7)
 #elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6EK336) \
 	|| defined(CONFIG_TARGET_MYIMX6ACO))
-#define CONFIG_PCIE_IMX_PERST_GPIO	IMX_GPIO_NR(6, 14)
+#define CONFIG_PCIE_IMX_PERST_GPIO		IMX_GPIO_NR(6, 14)
 #endif
 
 #endif
@@ -247,7 +248,7 @@
 #define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
-#define CONFIG_SYS_I2C_SPEED		100000
+#define CONFIG_SYS_I2C_SPEED			100000
 
 /* FrameBuffer ************************************************************** */
 #define CONFIG_DISPLAY_CPUINFO
@@ -266,9 +267,9 @@
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
 #if defined(CONFIG_MX6DL)
-#define CONFIG_IPUV3_CLK 198000000
+#define CONFIG_IPUV3_CLK 			198000000
 #else
-#define CONFIG_IPUV3_CLK 264000000
+#define CONFIG_IPUV3_CLK 			264000000
 #endif
 #define CONFIG_IMX_HDMI
 #define CONFIG_IMX_VIDEO_SKIP
@@ -279,27 +280,27 @@
 #define CONFIG_BOARD_POSTCLK_INIT
 
 #if defined(CONFIG_MX6QP)
-#define PHYS_SDRAM_SIZE		(1u * 1024 * 1024 * 1024)
-#define EK_SPEC				"6qp"
+#define PHYS_SDRAM_SIZE    			(1u * 1024 * 1024 * 1024)
+#define EK_SPEC    				"6qp"
 #elif defined(CONFIG_MX6Q)
 #if (CONFIG_DDR_MB == 2048)
-#define PHYS_SDRAM_SIZE		(2u * 1024 * 1024 * 1024)
-#define EK_SPEC				"6q-2g"
+#define PHYS_SDRAM_SIZE    			(2u * 1024 * 1024 * 1024)
+#define EK_SPEC    				"6q-2g"
 #else
-#define PHYS_SDRAM_SIZE		(1u * 1024 * 1024 * 1024)
-#define EK_SPEC				"6q"
+#define PHYS_SDRAM_SIZE    			(1u * 1024 * 1024 * 1024)
+#define EK_SPEC    				"6q"
 #endif
 #elif defined(CONFIG_MX6SOLO)
 #if (CONFIG_DDR_MB == 1024)
-#define PHYS_SDRAM_SIZE		(1u * 1024 * 1024 * 1024)
-#define EK_SPEC				"6s-1g"
+#define PHYS_SDRAM_SIZE    			(1u * 1024 * 1024 * 1024)
+#define EK_SPEC    				"6s-1g"
 #else
-#define PHYS_SDRAM_SIZE		(512u * 1024 * 1024)
-#define EK_SPEC				"6s"
+#define PHYS_SDRAM_SIZE    			(512u * 1024 * 1024)
+#define EK_SPEC    				"6s"
 #endif
 #elif defined(CONFIG_MX6DL)
-#define PHYS_SDRAM_SIZE		(1u * 1024 * 1024 * 1024)
-#define EK_SPEC				"6u"
+#define PHYS_SDRAM_SIZE    			(1u * 1024 * 1024 * 1024)
+#define EK_SPEC    				"6u"
 #endif
 
 /* CMD ********************************************************************** */
@@ -321,26 +322,26 @@
 #endif
 
 #define CONFIG_CMD_MEMTEST
-#define CONFIG_SYS_MEMTEST_START	0x10000000
-#define CONFIG_SYS_MEMTEST_END		0x10010000
-#define CONFIG_SYS_MEMTEST_SCRATCH	0x10800000
+#define CONFIG_SYS_MEMTEST_START		0x10000000
+#define CONFIG_SYS_MEMTEST_END			0x10010000
+#define CONFIG_SYS_MEMTEST_SCRATCH		0x10800000
 
 /* Environment ************************************************************** */
 #define CONFIG_ENV_OVERWRITE
-#define CONFIG_BOOTARGS_CMA_SIZE   "cma=320M "
+#define CONFIG_BOOTARGS_CMA_SIZE 		"cma=320M "
 
 #if !defined(CONFIG_SYS_NOSMP)
 #define CONFIG_SYS_NOSMP
 #endif
 
-#define CONFIG_BOOTDELAY				1
+#define CONFIG_BOOTDELAY			1
 
-#define CONFIG_CONSOLE_DEV				"ttymxc0"
-#define CONFIG_MMCROOT					"/dev/mmcblk3p2"  /* SDHC4 */
-#define CONFIG_LOADADDR					0x12000000
-#define CONFIG_SYS_TEXT_BASE			0x17800000
-#define CONFIG_SYS_LOAD_ADDR			CONFIG_LOADADDR
-#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
+#define CONFIG_CONSOLE_DEV			"ttymxc0"
+#define CONFIG_MMCROOT				"/dev/mmcblk3p2"  /* SDHC4 */
+#define CONFIG_LOADADDR    			0x12000000
+#define CONFIG_SYS_TEXT_BASE    		0x17800000
+#define CONFIG_SYS_LOAD_ADDR    		CONFIG_LOADADDR
+#define CONFIG_SYS_MMC_IMG_LOAD_PART		2
 
 #define CONFIG_MFG_ENV_SETTINGS \
 	"mfgtool_args=setenv bootargs console=" CONFIG_CONSOLE_DEV ",115200 " \
@@ -369,7 +370,7 @@
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"smp=" CONFIG_SYS_NOSMP "\0"\
 	"ip_dyn=no\0" \
-	"display=\ \0" \
+	"display=${fb0_hdmi}\ \0" \
 	"fb0_lvds1=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin1\0" \
 	"fb1_lvds1=video=mxcfb1:dev=ldb,if=RGB666 ldb=sin1\0" \
 	"fb0_lvds0=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin0\0" \
@@ -386,8 +387,8 @@
 		"else " \
 			"setenv get_cmd tftp; " \
 		"fi;\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"loadimage=ext4load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
+	"loadfdt=ext4load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"update_uboot=" \
 		"if run set_net_cmd; then " \
 			"if ${get_cmd} ${loadaddr} ${uboot_file}; then " \
