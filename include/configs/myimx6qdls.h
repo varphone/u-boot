@@ -359,8 +359,8 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
 	"uboot_file=uboot-"CONFIG_BOARD_NAME"-"EK_SPEC".imx\0" \
-	"image_file=zImage-myimx6\0" \
-	"fdt_file="CONFIG_BOARD_NAME"-"EK_SPEC".dtb\0" \
+	"image_file=/boot/zImage\0" \
+	"fdt_file=/boot/"CONFIG_BOARD_NAME"-"EK_SPEC".dtb\0" \
 	"fdt_addr=0x18000000\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"fdt_high=0xffffffff\0"	  \
