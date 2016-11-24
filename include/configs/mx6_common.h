@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2012-2016 Freescale Semiconductor, Inc.
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
  *
  * SPDX-License-Identifier:	GPL-2.0
@@ -9,9 +10,13 @@
 
 #ifndef CONFIG_MX6UL
 #define CONFIG_ARM_ERRATA_743622
+#if (defined(CONFIG_MX6QP) || defined(CONFIG_MX6Q) ||\
+defined(CONFIG_MX6DL)) && !defined(CONFIG_MX6SOLO)
 #define CONFIG_ARM_ERRATA_751472
 #define CONFIG_ARM_ERRATA_794072
 #define CONFIG_ARM_ERRATA_761320
+#define CONFIG_ARM_ERRATA_845369
+#endif
 
 #ifndef CONFIG_SYS_L2CACHE_OFF
 #define CONFIG_SYS_L2_PL310
@@ -19,9 +24,21 @@
 #endif
 
 #define CONFIG_MP
+#define CONFIG_GPT_TIMER
+#else
+#define CONFIG_SYSCOUNTER_TIMER
+#define CONFIG_SC_TIMER_CLK 8000000 /* 8Mhz */
 #endif
 #define CONFIG_BOARD_POSTCLK_INIT
 #define CONFIG_MXC_GPT_HCLK
+
+#ifdef CONFIG_MX6QP
+#define CONFIG_MX6Q
+#endif
+
+#ifdef CONFIG_MX6SOLO
+#define CONFIG_MX6DL
+#endif
 
 #define CONFIG_SYS_NO_FLASH
 
@@ -47,7 +64,7 @@
 
 /* Boot options */
 #if (defined(CONFIG_MX6SX) || defined(CONFIG_MX6SL) || defined(CONFIG_MX6UL))
-#define CONFIG_LOADADDR		0x82000000
+#define CONFIG_LOADADDR		0x80800000
 #ifndef CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_TEXT_BASE	0x87800000
 #endif
@@ -103,9 +120,12 @@
 #define CONFIG_BOUNCE_BUFFER
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
+#define CONFIG_SUPPORT_EMMC_BOOT
 
 /* Fuses */
 #define CONFIG_CMD_FUSE
 #define CONFIG_MXC_OCOTP
 
+/* LDO Bypass */
+#define CONFIG_LDO_BYPASS_CHECK
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Freescale Semiconductor, Inc.
+ * Copyright (C) 2010-2016 Freescale Semiconductor, Inc.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -59,6 +59,19 @@ void setup_gpmi_io_clk(u32 cfg)
 			cfg);
 
 	setbits_le32(&imx_ccm->CCGR4, MXC_CCM_CCGR4_QSPI2_ENFC_MASK);
+#elif defined(CONFIG_MX6UL)
+	/*
+	 * config gpmi and bch clock to 100 MHz
+	 * bch/gpmi select PLL2 PFD2 400M
+	 * 100M = 400M / 4
+	 */
+	clrbits_le32(&imx_ccm->cscmr1,
+		     MXC_CCM_CSCMR1_BCH_CLK_SEL |
+		     MXC_CCM_CSCMR1_GPMI_CLK_SEL);
+	clrsetbits_le32(&imx_ccm->cscdr1,
+			MXC_CCM_CSCDR1_BCH_PODF_MASK |
+			MXC_CCM_CSCDR1_GPMI_PODF_MASK,
+			cfg);
 #else
 	clrbits_le32(&imx_ccm->CCGR2, MXC_CCM_CCGR2_IOMUX_IPT_CLK_IO_MASK);
 
@@ -97,7 +110,10 @@ void enable_enet_clk(unsigned char enable)
 {
 	u32 mask, *addr;
 
-	if (is_cpu_type(MXC_CPU_MX6UL)) {
+	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+		mask = MXC_CCM_CCGR0_ENET_CLK_ENABLE_MASK;
+		addr = &imx_ccm->CCGR0;
+	} else if (is_cpu_type(MXC_CPU_MX6UL)) {
 		mask = MXC_CCM_CCGR3_ENET_MASK;
 		addr = &imx_ccm->CCGR3;
 	} else {
@@ -117,7 +133,7 @@ void enable_uart_clk(unsigned char enable)
 {
 	u32 mask;
 
-	if (is_cpu_type(MXC_CPU_MX6UL))
+	if (is_cpu_type(MXC_CPU_MX6UL) || is_cpu_type(MXC_CPU_MX6ULL))
 		mask = MXC_CCM_CCGR5_UART_MASK;
 	else
 		mask = MXC_CCM_CCGR5_UART_MASK | MXC_CCM_CCGR5_UART_SERIAL_MASK;
@@ -168,7 +184,8 @@ int enable_i2c_clk(unsigned char enable, unsigned i2c_num)
 			reg &= ~mask;
 		__raw_writel(reg, &imx_ccm->CCGR2);
 	} else {
-		if (is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL)) {
+		if (is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL) ||
+		    is_cpu_type(MXC_CPU_MX6ULL)) {
 			mask = MXC_CCM_CCGR6_I2C4_MASK;
 			addr = &imx_ccm->CCGR6;
 		} else {
@@ -279,7 +296,8 @@ static u32 mxc_get_pll_pfd(enum pll_clocks pll, int pfd_num)
 
 	switch (pll) {
 	case PLL_BUS:
-		if (!is_cpu_type(MXC_CPU_MX6UL)) {
+		if (!is_cpu_type(MXC_CPU_MX6UL) &&
+		    !is_cpu_type(MXC_CPU_MX6ULL)) {
 			if (pfd_num == 3) {
 				/* No PFD3 on PPL2 */
 				return 0;
@@ -380,7 +398,8 @@ static u32 get_ipg_per_clk(void)
 
 	reg = __raw_readl(&imx_ccm->cscmr1);
 	if (is_cpu_type(MXC_CPU_MX6SL) || is_cpu_type(MXC_CPU_MX6SX) ||
-	    is_mx6dqp() || is_cpu_type(MXC_CPU_MX6UL)) {
+	    is_mx6dqp() || is_cpu_type(MXC_CPU_MX6UL) ||
+	    is_cpu_type(MXC_CPU_MX6ULL)) {
 		if (reg & MXC_CCM_CSCMR1_PER_CLK_SEL_MASK)
 			return MXC_HCLK; /* OSC 24Mhz */
 	}
@@ -397,7 +416,8 @@ static u32 get_uart_clk(void)
 	reg = __raw_readl(&imx_ccm->cscdr1);
 
 	if (is_cpu_type(MXC_CPU_MX6SL) || is_cpu_type(MXC_CPU_MX6SX) ||
-	    is_mx6dqp() || is_cpu_type(MXC_CPU_MX6UL)) {
+	    is_mx6dqp() || is_cpu_type(MXC_CPU_MX6UL) ||
+	    is_cpu_type(MXC_CPU_MX6ULL)) {
 		if (reg & MXC_CCM_CSCDR1_UART_CLK_SEL)
 			freq = MXC_HCLK;
 	}
@@ -417,7 +437,8 @@ static u32 get_cspi_clk(void)
 		     MXC_CCM_CSCDR2_ECSPI_CLK_PODF_OFFSET;
 
 	if (is_mx6dqp() || is_cpu_type(MXC_CPU_MX6SL) ||
-	    is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL)) {
+	    is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL) ||
+	    is_cpu_type(MXC_CPU_MX6ULL)) {
 		if (reg & MXC_CCM_CSCDR2_ECSPI_CLK_SEL_MASK)
 			return MXC_HCLK / (cspi_podf + 1);
 	}
@@ -480,7 +501,7 @@ static u32 get_mmdc_ch0_clk(void)
 	u32 freq, podf, per2_clk2_podf, pmu_misc2_audio_div;
 
 	if (is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL) ||
-	    is_cpu_type(MXC_CPU_MX6SL)) {
+	    is_cpu_type(MXC_CPU_MX6SL) || is_cpu_type(MXC_CPU_MX6ULL)) {
 		podf = (cbcdr & MXC_CCM_CBCDR_MMDC_CH1_PODF_MASK) >>
 			MXC_CCM_CBCDR_MMDC_CH1_PODF_OFFSET;
 		if (cbcdr & MXC_CCM_CBCDR_PERIPH2_CLK_SEL) {
@@ -618,7 +639,8 @@ void mxs_set_lcdclk(u32 base_addr, u32 freq)
 
 	debug("mxs_set_lcdclk, freq = %dKHz\n", freq);
 
-	if ((!is_cpu_type(MXC_CPU_MX6SX)) && !is_cpu_type(MXC_CPU_MX6UL)) {
+	if ((!is_cpu_type(MXC_CPU_MX6SX)) && !is_cpu_type(MXC_CPU_MX6UL) &&
+	    !is_cpu_type(MXC_CPU_MX6ULL)) {
 		debug("This chip not support lcd!\n");
 		return;
 	}
@@ -752,7 +774,7 @@ int enable_lcdif_clock(u32 base_addr)
 			 MXC_CCM_CCGR3_DISP_AXI_MASK) :
 			(MXC_CCM_CCGR3_LCDIF1_PIX_MASK |
 			 MXC_CCM_CCGR3_DISP_AXI_MASK);
-	} else if (is_cpu_type(MXC_CPU_MX6UL)) {
+	} else if (is_cpu_type(MXC_CPU_MX6UL) || is_cpu_type(MXC_CPU_MX6ULL)) {
 		if (base_addr != LCDIF1_BASE_ADDR) {
 			puts("Wrong LCD interface!\n");
 			return -EINVAL;
@@ -779,6 +801,65 @@ int enable_lcdif_clock(u32 base_addr)
 
 	return 0;
 }
+
+int enable_lvds_bridge(u32 lcd_base_addr)
+{
+	u32 reg = 0;
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
+
+	if (is_cpu_type(MXC_CPU_MX6SX)) {
+		if ((lcd_base_addr != LCDIF1_BASE_ADDR) &&
+		    (lcd_base_addr != LCDIF2_BASE_ADDR)) {
+			puts("Wrong LCD interface!\n");
+			return -EINVAL;
+		}
+	} else {
+		debug("This chip not support lvds bridge!\n");
+		return 0;
+	}
+
+	/* Turn on LDB DI0 clocks */
+	reg = readl(&imx_ccm->CCGR3);
+	reg |=  MXC_CCM_CCGR3_LDB_DI0_MASK;
+	writel(reg, &imx_ccm->CCGR3);
+
+	/* set LDB DI0 clk select to 011 PLL2 PFD3 200M*/
+	reg = readl(&imx_ccm->cs2cdr);
+	reg &= ~MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK;
+	reg |= (3 << MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET);
+	writel(reg, &imx_ccm->cs2cdr);
+
+	reg = readl(&imx_ccm->cscmr2);
+	reg |= MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV;
+	writel(reg, &imx_ccm->cscmr2);
+
+	/* set LDB DI0 clock for LCDIF PIX clock */
+	reg = readl(&imx_ccm->cscdr2);
+	if (lcd_base_addr == LCDIF1_BASE_ADDR) {
+		reg &= ~MXC_CCM_CSCDR2_LCDIF1_CLK_SEL_MASK;
+		reg |= (0x3 << MXC_CCM_CSCDR2_LCDIF1_CLK_SEL_OFFSET);
+	} else {
+		reg &= ~MXC_CCM_CSCDR2_LCDIF2_CLK_SEL_MASK;
+		reg |= (0x3 << MXC_CCM_CSCDR2_LCDIF2_CLK_SEL_OFFSET);
+	}
+	writel(reg, &imx_ccm->cscdr2);
+
+	reg = IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
+		| IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
+		| IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT
+		| IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0;
+	writel(reg, &iomux->gpr[6]);
+
+	reg = readl(&iomux->gpr[5]);
+	if (lcd_base_addr == LCDIF1_BASE_ADDR)
+		reg &= ~0x8;  /* MUX LVDS to LCDIF1 */
+	else
+		reg |= 0x8; /* MUX LVDS to LCDIF2 */
+	writel(reg, &iomux->gpr[5]);
+
+	return 0;
+}
+
 #endif
 
 #ifdef CONFIG_FSL_QSPI
@@ -831,6 +912,18 @@ void enable_qspi_clk(int qspi_num)
 }
 #endif
 
+#if defined(CONFIG_VIDEO_GIS)
+void mxs_set_vadcclk()
+{
+	u32 reg = 0;
+
+	reg = readl(&imx_ccm->cscmr2);
+	reg &= ~MXC_CCM_CSCMR2_VID_CLK_SEL_MASK;
+	reg |= 0x19 << MXC_CCM_CSCMR2_VID_CLK_SEL_OFFSET;
+	writel(reg, &imx_ccm->cscmr2);
+}
+#endif
+
 #ifdef CONFIG_FEC_MXC
 int enable_fec_anatop_clock(int fec_id, enum enet_freq freq)
 {
@@ -851,7 +944,8 @@ int enable_fec_anatop_clock(int fec_id, enum enet_freq freq)
 	} else if (fec_id == 1) {
 		/* Only i.MX6SX/UL support ENET2 */
 		if (!(is_cpu_type(MXC_CPU_MX6SX) ||
-		      is_cpu_type(MXC_CPU_MX6UL)))
+		      is_cpu_type(MXC_CPU_MX6UL) ||
+		      is_cpu_type(MXC_CPU_MX6ULL)))
 			return -EINVAL;
 		reg &= ~BM_ANADIG_PLL_ENET2_DIV_SELECT;
 		reg |= BF_ANADIG_PLL_ENET2_DIV_SELECT(freq);
@@ -880,6 +974,11 @@ int enable_fec_anatop_clock(int fec_id, enum enet_freq freq)
 	writel(reg, &anatop->pll_enet);
 
 #ifdef CONFIG_MX6SX
+	/* Disable enet system clcok before switching clock parent */
+	reg = readl(&imx_ccm->CCGR3);
+	reg &= ~MXC_CCM_CCGR3_ENET_MASK;
+	writel(reg, &imx_ccm->CCGR3);
+
 	/*
 	 * Set enet ahb clock to 200MHz
 	 * pll2_pfd2_396m-> ENET_PODF-> ENET_AHB
@@ -1010,6 +1109,15 @@ void disable_sata_clock(void)
 #endif
 
 #ifdef CONFIG_PCIE_IMX
+static void ungate_disp_axi_clock(void)
+{
+	struct mxc_ccm_reg *const imx_ccm =
+		(struct mxc_ccm_reg *)CCM_BASE_ADDR;
+
+	/* Enable display axi clock. */
+	setbits_le32(&imx_ccm->CCGR3, MXC_CCM_CCGR3_DISP_AXI_MASK);
+}
+
 static void ungate_pcie_clock(void)
 {
 	struct mxc_ccm_reg *const imx_ccm =
@@ -1057,14 +1165,22 @@ int enable_pcie_clock(void)
 	/* PCIe reference clock sourced from AXI. */
 	clrbits_le32(&ccm_regs->cbcmr, MXC_CCM_CBCMR_PCIE_AXI_CLK_SEL);
 
-	/* Party time! Ungate the clock to the PCIe. */
+	if (!is_cpu_type(MXC_CPU_MX6SX)) {
+		/* Party time! Ungate the clock to the PCIe. */
 #ifdef CONFIG_CMD_SATA
-	ungate_sata_clock();
+		ungate_sata_clock();
 #endif
-	ungate_pcie_clock();
+		ungate_pcie_clock();
 
-	return enable_enet_pll(BM_ANADIG_PLL_ENET_ENABLE_SATA |
-			       BM_ANADIG_PLL_ENET_ENABLE_PCIE);
+		return enable_enet_pll(BM_ANADIG_PLL_ENET_ENABLE_SATA |
+				       BM_ANADIG_PLL_ENET_ENABLE_PCIE);
+	} else {
+		/* Party time! Ungate the clock to the PCIe. */
+		ungate_disp_axi_clock();
+		ungate_pcie_clock();
+
+		return enable_enet_pll(BM_ANADIG_PLL_ENET_ENABLE_PCIE);
+	}
 }
 #endif
 
@@ -1073,17 +1189,27 @@ void hab_caam_clock_enable(unsigned char enable)
 {
 	u32 reg;
 
-	/* CG4 ~ CG6, CAAM clocks */
-	reg = __raw_readl(&imx_ccm->CCGR0);
-	if (enable)
-		reg |= (MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
-			MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
-			MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
-	else
-		reg &= ~(MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
-			MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
-			MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
-	__raw_writel(reg, &imx_ccm->CCGR0);
+	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+		/* CG5, DCP clock */
+		reg = __raw_readl(&imx_ccm->CCGR0);
+		if (enable)
+			reg |= MXC_CCM_CCGR0_DCP_CLK_MASK;
+		else
+			reg &= ~MXC_CCM_CCGR0_DCP_CLK_MASK;
+		__raw_writel(reg, &imx_ccm->CCGR0);
+	} else {
+		/* CG4 ~ CG6, CAAM clocks */
+		reg = __raw_readl(&imx_ccm->CCGR0);
+		if (enable)
+			reg |= (MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
+				MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
+				MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
+		else
+			reg &= ~(MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
+				MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
+				MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
+		__raw_writel(reg, &imx_ccm->CCGR0);
+	}
 
 	/* EMI slow clk */
 	reg = __raw_readl(&imx_ccm->CCGR6);
@@ -1201,7 +1327,30 @@ int do_mx6_showclocks(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return 0;
 }
 
-#ifndef CONFIG_MX6SX
+static void pre_misc_setting(void)
+{
+	/* Bypass IPU1 QoS generator */
+	writel(0x00000002, 0x00bb048c);
+	/* Bypass IPU2 QoS generator */
+	writel(0x00000002, 0x00bb050c);
+	/* Bandwidth THR for of PRE0 */
+	writel(0x00000200, 0x00bb0690);
+	/* Bandwidth THR for of PRE1 */
+	writel(0x00000200, 0x00bb0710);
+	/* Bandwidth THR for of PRE2 */
+	writel(0x00000200, 0x00bb0790);
+	/* Bandwidth THR for of PRE3 */
+	writel(0x00000200, 0x00bb0810);
+	/* Saturation THR for of PRE0 */
+	writel(0x00000010, 0x00bb0694);
+	/* Saturation THR for of PRE1 */
+	writel(0x00000010, 0x00bb0714);
+	/* Saturation THR for of PRE2 */
+	writel(0x00000010, 0x00bb0794);
+	/* Saturation THR for of PRE */
+	writel(0x00000010, 0x00bb0814);
+}
+
 void enable_ipu_clock(void)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -1213,9 +1362,45 @@ void enable_ipu_clock(void)
 	if (is_mx6dqp()) {
 		setbits_le32(&mxc_ccm->CCGR6, MXC_CCM_CCGR6_PRG_CLK0_MASK);
 		setbits_le32(&mxc_ccm->CCGR3, MXC_CCM_CCGR3_IPU2_IPU_MASK);
+
+		/*
+		 * Since CONFIG_VIDEO_IPUV3 is always set in mx6sabre_common.h and
+		 * this misc setting is a must for mx6qp, this position is ok
+		 * to do such settings.
+		 */
+		pre_misc_setting();
 	}
 }
+
+#if defined(CONFIG_MXC_EPDC) && defined(CONFIG_MX6ULL)
+void enable_epdc_clock(void)
+{
+	u32 reg = 0;
+
+	/* disable the clock gate first */
+	clrbits_le32(&imx_ccm->CCGR3, MXC_CCM_CCGR3_EPDC_CLK_ENABLE_MASK);
+
+	/* PLL3_PFD2 */
+	reg = readl(&imx_ccm->chsccdr);
+	reg &= ~MXC_CCM_CHSCCDR_EPDC_PRE_CLK_SEL_MASK;
+	reg |= 5 << MXC_CCM_CHSCCDR_EPDC_PRE_CLK_SEL_OFFSET;
+	writel(reg, &imx_ccm->chsccdr);
+
+	reg = readl(&imx_ccm->chsccdr);
+	reg &= ~MXC_CCM_CHSCCDR_EPDC_PODF_MASK;
+	reg |= 7 << MXC_CCM_CHSCCDR_EPDC_PODF_OFFSET;
+	writel(reg, &imx_ccm->chsccdr);
+
+	reg = readl(&imx_ccm->chsccdr);
+	reg &= ~MXC_CCM_CHSCCDR_EPDC_CLK_SEL_MASK;
+	reg |= 0 <<MXC_CCM_CHSCCDR_EPDC_CLK_SEL_OFFSET;
+	writel(reg, &imx_ccm->chsccdr);
+
+	/* enable the clock gate */
+	setbits_le32(&imx_ccm->CCGR3, MXC_CCM_CCGR3_EPDC_CLK_ENABLE_MASK);
+}
 #endif
+
 /***************************************************/
 
 U_BOOT_CMD(
