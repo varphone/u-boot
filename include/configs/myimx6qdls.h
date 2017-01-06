@@ -364,7 +364,10 @@
 	"fdt_addr=0x18000000\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"fdt_high=0xffffffff\0"	  \
+	"initrd_file=/boot/initrd.img\0" \
+	"initrd_addr=0x13000000\0" \
 	"initrd_high=0xffffffff\0" \
+	"initrd_size=0x1000000\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
@@ -387,6 +390,7 @@
 		"else " \
 			"setenv get_cmd tftp; " \
 		"fi;\0" \
+	"loadinitrd=ext4load mmc ${mmcdev}:${mmcpart} ${initrd_addr} ${initrd_file}\0" \
 	"loadimage=ext4load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
 	"loadfdt=ext4load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"update_uboot=" \
@@ -406,8 +410,8 @@
 		"root=${mmcroot} ${disp_args}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
-		"if run loadfdt; then " \
-			"bootz ${loadaddr} - ${fdt_addr}; " \
+		"if run loadinitrd; run loadfdt; then " \
+			"bootz ${loadaddr} ${initrd_addr}:${initrd_size} ${fdt_addr}; " \
 		"else " \
 			"echo WARN: Cannot boot from mmc; " \
 		"fi;\0" \
