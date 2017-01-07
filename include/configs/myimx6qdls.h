@@ -215,7 +215,7 @@
 #define CONFIG_USB_ETHER_ASIX
 #define CONFIG_MXC_USB_PORTSC			(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS			0
-#define CONFIG_USB_MAX_CONTROLLER_COUNT    	1 /* Enabled USB controller number */
+#define CONFIG_USB_MAX_CONTROLLER_COUNT    	2 /* Enabled USB controller number */
 #endif
 
 /* SATA ********************************************************************* */
@@ -337,11 +337,12 @@
 #define CONFIG_BOOTDELAY			1
 
 #define CONFIG_CONSOLE_DEV			"ttymxc0"
-#define CONFIG_MMCROOT				"/dev/mmcblk3p2"  /* SDHC4 */
+#define CONFIG_MMCROOT				"/dev/mmcblk3p3"  /* SDHC4 */
+#define CONFIG_MMCROOT_OVERLAY			"overlayroot=/dev/mmcblk3p4:rw:ext4"
 #define CONFIG_LOADADDR    			0x12000000
 #define CONFIG_SYS_TEXT_BASE    		0x17800000
 #define CONFIG_SYS_LOAD_ADDR    		CONFIG_LOADADDR
-#define CONFIG_SYS_MMC_IMG_LOAD_PART		2
+#define CONFIG_SYS_MMC_IMG_LOAD_PART		1
 
 #define CONFIG_MFG_ENV_SETTINGS \
 	"mfgtool_args=setenv bootargs console=" CONFIG_CONSOLE_DEV ",115200 " \
@@ -358,22 +359,22 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
-	"uboot_file=uboot-"CONFIG_BOARD_NAME"-"EK_SPEC".imx\0" \
-	"image_file=/boot/zImage\0" \
-	"fdt_file=/boot/"CONFIG_BOARD_NAME"-"EK_SPEC".dtb\0" \
+	"uboot_file=u-boot-"CONFIG_BOARD_NAME"-"EK_SPEC".imx\0" \
+	"image_file=zImage-"CONFIG_BOARD_NAME"-"EK_SPEC"\0" \
+	"fdt_file="CONFIG_BOARD_NAME"-"EK_SPEC".dtb\0" \
 	"fdt_addr=0x18000000\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"fdt_high=0xffffffff\0"	  \
-	"initrd_file=/boot/initrd.img\0" \
+	"initrd_file=initrd-"CONFIG_BOARD_NAME"-"EK_SPEC".img\0" \
 	"initrd_addr=0x13000000\0" \
 	"initrd_high=0xffffffff\0" \
 	"initrd_size=0x1000000\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"mmcroot=" CONFIG_MMCROOT " rootfstype=squashfs rootwait "CONFIG_MMCROOT_OVERLAY"\0" \
 	"smp=" CONFIG_SYS_NOSMP "\0"\
 	"ip_dyn=no\0" \
-	"display=${fb0_hdmi}\ \0" \
+	"display=\0" \
 	"fb0_lvds1=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin1\0" \
 	"fb1_lvds1=video=mxcfb1:dev=ldb,if=RGB666 ldb=sin1\0" \
 	"fb0_lvds0=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin0\0" \
@@ -433,6 +434,10 @@
 			"bootz ${loadaddr} - ${fdt_addr}; " \
 		"else " \
 			"echo WARN: Cannot boot from net; " \
+		"fi;\0" \
+	"usbupdate=usb start; " \
+		"if fatload usb 0:0 ${loadaddr} ${uboot_file}; then " \
+			"sf probe "__stringify(CONFIG_SF_DEFAULT_CS)"; sf erase 0 0x200000; sf write ${loadaddr} 0x400 0x80000; " \
 		"fi;\0"
 
 #define CONFIG_BOOTCOMMAND \
