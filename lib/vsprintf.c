@@ -679,3 +679,18 @@ void panic(const char *fmt, ...)
 	do_reset (NULL, 0, 0, NULL);
 #endif
 }
+/**
+ *  ultohstr - turn sizes to human readable format.
+ */
+char *ultohstr(unsigned long long size)
+{
+	int ix;
+	static char buffer[20]; 
+	char *fmt[] = {
+		"%u", "%uK", "%uM", "%uG", "%uT", "%uT"};
+	for (ix = 0; (ix < 5) && !(size & 0x3FF) && size; ix++) {
+		size = (size >> 10);
+	}
+	sprintf(buffer, fmt[ix], size);
+	return buffer;
+}

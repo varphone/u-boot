@@ -9,6 +9,7 @@
 #include <spi_flash.h>
 
 #include <asm/io.h>
+#include <linux/mtd/mtd.h>
 
 #ifndef CONFIG_SF_DEFAULT_SPEED
 # define CONFIG_SF_DEFAULT_SPEED	1000000
@@ -83,6 +84,7 @@ static int do_spi_flash_read_write(int argc, char *argv[])
 	void *buf;
 	char *endp;
 	int ret;
+	struct mtd_info_ex *spiflash_info = get_spiflash_info();
 
 	if (argc < 4)
 		goto usage;
@@ -96,6 +98,12 @@ static int do_spi_flash_read_write(int argc, char *argv[])
 	len = simple_strtoul(argv[3], &endp, 16);
 	if (*argv[3] == 0 || *endp != 0)
 		goto usage;
+		if (offset + len >
+		spiflash_info->chipsize * spiflash_info->numchips) {
+			printf(
+			"ERROR: read/write area is out of range!\n\n");
+							return -1;
+		}
 
 	buf = map_physmem(addr, len, MAP_WRBACK);
 	if (!buf) {
@@ -105,8 +113,49 @@ static int do_spi_flash_read_write(int argc, char *argv[])
 
 	if (strcmp(argv[0], "read") == 0)
 		ret = spi_flash_read(flash, offset, len, buf);
-	else
-		ret = spi_flash_write(flash, offset, len, buf);
+	else {
+		unsigned long write_start, write_len, write_step;
+		int percent_complete = -1;
+		char *pbuf = buf;
+
+		write_start = offset;
+		write_len   = len;
+		write_step  = spiflash_info->erasesize;
+
+		while (len > 0) {
+			if (len < write_step)
+				write_step = len;
+
+			ret = spi_flash_write(flash, offset, write_step, pbuf);
+			if (ret)
+				break;
+
+			offset += write_step;
+			pbuf   += write_step;
+			len    -= write_step;
+
+			do {
+				unsigned long long n = (unsigned long long)
+					(offset - write_start) * 100;
+				int percent;
+
+				do_div(n, write_len);
+				percent = (int)n;
+
+				/* output progress message only at whole percent
+				 * steps to reduce the number of messages
+				 * printed on (slow) serial consoles
+				 */
+				if (percent != percent_complete) {
+					percent_complete = percent;
+
+					printf("\rWriting at 0x%lx -- %3d%% "
+						"complete.", offset, percent);
+				}
+			} while (0);
+		}
+	}
+	puts("\n");
 
 	unmap_physmem(buf, len);
 
@@ -128,6 +177,9 @@ static int do_spi_flash_erase(int argc, char *argv[])
 	unsigned long len;
 	char *endp;
 	int ret;
+	struct mtd_info_ex *spiflash_info = get_spiflash_info();
+	unsigned long erase_start, erase_len, erase_step;
+	int percent_complete = -1;
 
 	if (argc < 3)
 		goto usage;
@@ -139,11 +191,59 @@ static int do_spi_flash_erase(int argc, char *argv[])
 	if (*argv[2] == 0 || *endp != 0)
 		goto usage;
 
-	ret = spi_flash_erase(flash, offset, len);
-	if (ret) {
-		printf("SPI flash %s failed\n", argv[0]);
+	if (offset + len > spiflash_info->chipsize * spiflash_info->numchips) {
+		printf("ERROR: erase area is out of range!\n\n");
 		return 1;
 	}
+
+	if (offset & (spiflash_info->erasesize-1)) {
+		printf("ERROR: erase start address is not block aligned!\n\n");
+		return 1;
+	}
+
+	if (len & (spiflash_info->erasesize-1)) {
+		printf("ERROR: erase length is not block aligned!\n\n");
+		return 1;
+	}
+
+	erase_start = offset;
+	erase_len   = len;
+	erase_step  = spiflash_info->erasesize;
+
+	while (len > 0) {
+		if (len < erase_step)
+			erase_step = len;
+
+		ret = spi_flash_erase(flash, offset, erase_step);
+		if (ret) {
+			printf("SPI flash %s failed\n", argv[0]);
+			return 1;
+		}
+
+		len -= erase_step;
+		offset += erase_step;
+
+		do {
+			unsigned long long n = (unsigned long long)
+				(offset - erase_start) * 100;
+			int percent;
+
+			do_div(n, erase_len);
+			percent = (int)n;
+
+			/* output progress message only at whole percent
+			 * steps to reduce the number of messages printed
+			 * on (slow) serial consoles
+			 */
+			if (percent != percent_complete) {
+				percent_complete = percent;
+
+				printf("\rErasing at 0x%lx -- %3d%% complete.",
+						offset, percent);
+			}
+		} while (0);
+	}
+	puts("\n");
 
 	return 0;
 
@@ -186,7 +286,7 @@ U_BOOT_CMD(
 	"SPI flash sub-system",
 	"probe [bus:]cs [hz] [mode]	- init flash device on given SPI bus\n"
 	"				  and chip select\n"
-	"sf read addr offset len 	- read `len' bytes starting at\n"
+	"sf read addr offset len  - read `len' bytes starting at\n"
 	"				  `offset' to memory at `addr'\n"
 	"sf write addr offset len	- write `len' bytes from memory\n"
 	"				  at `addr' to flash at `offset'\n"

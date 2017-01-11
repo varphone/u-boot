@@ -50,8 +50,8 @@ extern void nand_wait_ready(struct mtd_info *mtd);
  * is supported now. If you add a chip with bigger oobsize/page
  * adjust this accordingly.
  */
-#define NAND_MAX_OOBSIZE	218
-#define NAND_MAX_PAGESIZE	4096
+#define NAND_MAX_OOBSIZE    512	
+#define NAND_MAX_PAGESIZE   8192	
 
 /*
  * Constants for hardware specific CLE/ALE/NCE function
@@ -549,6 +549,14 @@ struct platform_nand_chip *get_platform_nandchip(struct mtd_info *mtd)
 	struct nand_chip *chip = mtd->priv;
 
 	return chip->priv;
+}
+
+static inline char *get_ecctype_str(int ecctype)
+{
+	static char *ecctype_string[] = {
+		"None", "1bit/512Byte", "4bits/512Byte", "8bits/512Byte",
+		"24bits/1K", "40bits/1K", "unknown", "unknown"};
+	return ecctype_string[(ecctype & 0x0F)];
 }
 
 #endif /* __LINUX_MTD_NAND_H */

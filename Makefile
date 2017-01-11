@@ -209,11 +209,18 @@ LIBS += drivers/misc/libmisc.a
 LIBS += drivers/mmc/libmmc.a
 LIBS += drivers/mtd/libmtd.a
 LIBS += drivers/mtd/nand/libnand.a
+LIBS += drivers/mtd/nand/hinfc301/libhinfcv301.a
+LIBS += drivers/mtd/nand/hinfc504/libhinfcv504.a
 LIBS += drivers/mtd/onenand/libonenand.a
 LIBS += drivers/mtd/ubi/libubi.a
 LIBS += drivers/mtd/spi/libspi_flash.a
+LIBS += drivers/mtd/spi/hisfc350/libhisfcv350.a
+LIBS += drivers/mtd/spi/hisfc300new/libhisfcv300new.a
 LIBS += drivers/net/libnet.a
 LIBS += drivers/net/phy/libphy.a
+LIBS += drivers/net/hisfv300/libhisfv300.a
+LIBS += drivers/net/higmac/libhigmac.a
+LIBS += drivers/net/stmmac/libstmmac.a
 LIBS += drivers/pci/libpci.a
 LIBS += drivers/pcmcia/libpcmcia.a
 LIBS += drivers/power/libpower.a
@@ -235,6 +242,7 @@ LIBS += drivers/serial/libserial.a
 LIBS += drivers/twserial/libtws.a
 LIBS += drivers/usb/gadget/libusb_gadget.a
 LIBS += drivers/usb/host/libusb_host.a
+LIBS += drivers/usb/host/hiusb/libhiusb.a
 LIBS += drivers/usb/musb/libusb_musb.a
 LIBS += drivers/usb/phy/libusb_phy.a
 LIBS += drivers/video/libvideo.a
@@ -243,6 +251,10 @@ LIBS += common/libcommon.a
 LIBS += lib/libfdt/libfdt.a
 LIBS += api/libapi.a
 LIBS += post/libpost.a
+LIBS += product/libproduct.a
+LIBS += product/hiupdate/libhiupdate.a
+LIBS += product/hiddrtv200/libhiddrtv200.a
+sinclude Makefile-osd
 
 LIBS := $(addprefix $(obj),$(LIBS))
 .PHONY : $(LIBS) $(TIMESTAMP_FILE) $(VERSION_FILE)
@@ -302,6 +314,12 @@ $(obj)u-boot.srec:	$(obj)u-boot
 $(obj)u-boot.bin:	$(obj)u-boot
 		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
 
+.PHONY: mini-boot.bin
+mini-boot.bin: $(TOPDIR)/full-boot.bin
+	make -C $(TOPDIR)/arch/$(ARCH)/cpu/$(CPU)/compressed \
+		CROSS_COMPILE=$(CROSS_COMPILE) \
+		BINIMAGE=$(TOPDIR)/full-boot.bin TOPDIR=$(TOPDIR)
+
 $(obj)u-boot.ldr:	$(obj)u-boot
 		$(CREATE_LDR_ENV)
 		$(LDR) -T $(CONFIG_BFIN_CPU) -c $@ $< $(LDR_FLAGS)
@@ -339,7 +357,7 @@ GEN_UBOOT = \
 		cd $(LNDIR) && $(LD) $(LDFLAGS) $$UNDEF_SYM $(__OBJS) \
 			--start-group $(__LIBS) --end-group $(PLATFORM_LIBS) \
 			-Map u-boot.map -o u-boot
-$(obj)u-boot:	depend $(SUBDIRS) $(OBJS) $(LIBBOARD) $(LIBS) $(LDSCRIPT) $(obj)u-boot.lds
+$(obj)u-boot:	ddr_training depend $(SUBDIRS) $(OBJS) $(LIBBOARD) $(LIBS) $(LDSCRIPT) $(obj)u-boot.lds
 		$(GEN_UBOOT)
 ifeq ($(CONFIG_KALLSYMS),y)
 		smap=`$(call SYSTEM_MAP,u-boot) | \
@@ -347,6 +365,14 @@ ifeq ($(CONFIG_KALLSYMS),y)
 		$(CC) $(CFLAGS) -DSYSTEM_MAP="\"$${smap}\"" \
 			-c common/system_map.c -o $(obj)common/system_map.o
 		$(GEN_UBOOT) $(obj)common/system_map.o
+endif
+
+.PHONY: ddr_training
+ddr_training:
+ifdef CONFIG_DDR_TRAINING_V300
+	make -C $(TOPDIR)/arch/$(ARCH)/cpu/$(CPU)/ddr_training \
+		TOPDIR=$(TOPDIR) \
+		CROSS_COMPILE=$(CROSS_COMPILE)
 endif
 
 $(OBJS):	depend
@@ -3196,6 +3222,45 @@ s5p_goni_config:	unconfig
 smdkc100_config:	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 smdkc100 samsung s5pc1xx
 
+hi3518a_config: unconfig
+	@$(MKCONFIG) hi3518a arm hi3518 hi3518 NULL hi3518
+
+hi3518c_config: unconfig
+	@$(MKCONFIG) hi3518c arm hi3518 hi3518 NULL hi3518
+
+hi3518e_config: unconfig
+	@$(MKCONFIG) hi3518e arm hi3518 hi3518 NULL hi3518
+
+hi3516c_config: unconfig
+	@$(MKCONFIG) hi3516c arm hi3518 hi3518 NULL hi3518
+
+hi3520d_config: unconfig
+	@$(MKCONFIG) $(@:_config=) arm hi3520d hi3520d NULL hi3520d
+
+hi3535_config: unconfig
+	@$(MKCONFIG) $(@:_config=) arm hi3535 hi3535 NULL hi3535
+godarm_config:	unconfig
+	@$(MKCONFIG) $(@:_config=) arm godarm godarm NULL godarm
+
+godcare_config:	unconfig
+	@$(MKCONFIG) $(@:_config=) arm godarm godarm NULL godarm
+
+godcube_config: unconfig
+	@$(MKCONFIG) $(@:_config=) arm godcube godcube NULL godcube
+
+godnet_config: unconfig
+	@$(MKCONFIG) $(@:_config=) arm godnet godnet NULL godnet
+
+godbox_config: unconfig
+	@$(MKCONFIG) $(@:_config=) arm godbox godbox 
+
+godeyes_config: unconfig
+	@$(MKCONFIG) $(@:_config=) arm godeyes godeyes NULL godeyes
+
+godbox-v1_config: unconfig
+	@$(MKCONFIG) $(@:_config=) arm godbox-v1 godbox-v1
+
+
 #########################################################################
 ## XScale Systems
 #########################################################################
@@ -3686,8 +3751,17 @@ grsim_leon2_config : unconfig
 #########################################################################
 #########################################################################
 #########################################################################
-
-clean:
+TARGETS := hi3535
+.PHONY: ddr_training.clean
+ddr_training.clean:
+ifdef CONFIG_DDR_TRAINING_V300
+	@for ix in ${TARGETS}; do ( \
+		test ! -d $(TOPDIR)/arch/arm/cpu/$${ix}/ddr_training \
+		|| make -C $(TOPDIR)/arch/arm/cpu/$${ix}/ddr_training \
+		CROSS_COMPILE=$(CROSS_COMPILE) clean; \
+		) done
+endif
+clean:	ddr_training.clean
 	@rm -f $(obj)examples/standalone/82559_eeprom			  \
 	       $(obj)examples/standalone/atmel_df_pow2			  \
 	       $(obj)examples/standalone/eepro100_eeprom		  \

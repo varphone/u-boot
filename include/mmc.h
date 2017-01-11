@@ -128,11 +128,14 @@
  * EXT_CSD fields
  */
 
+#define EXT_CSD_BOOT_BUS_WIDTH	177	/* R/W */
+#define EXT_CSD_BOOT_CONFIG	179	/* R/W */
 #define EXT_CSD_BUS_WIDTH	183	/* R/W */
 #define EXT_CSD_HS_TIMING	185	/* R/W */
 #define EXT_CSD_CARD_TYPE	196	/* RO */
 #define EXT_CSD_REV		192	/* RO */
 #define EXT_CSD_SEC_CNT		212	/* RO, 4 bytes */
+#define EXT_CSD_BOOT_SIZE_MULTI	226	/* RO */
 
 /*
  * EXT_CSD field definitions
@@ -169,6 +172,10 @@
 #define MMC_RSP_R6      (MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 #define MMC_RSP_R7      (MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 
+/*
+ * Card status field definitions
+ */
+#define MMC_CS_ERROR_MASK	0xFDFFA080
 
 struct mmc_cid {
 	unsigned long psn;

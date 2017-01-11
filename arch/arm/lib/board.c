@@ -48,7 +48,9 @@
 #include <serial.h>
 #include <nand.h>
 #include <onenand_uboot.h>
+#include <spi_flash.h>
 #include <mmc.h>
+#include <boot/customer.h>
 
 #ifdef CONFIG_BITBANGMII
 #include <miiphy.h>
@@ -86,6 +88,12 @@ extern void rtl8019_get_enetaddr (uchar * addr);
 #include <i2c.h>
 #endif
 
+#ifdef CONFIG_GENERIC_MMC
+extern int mmc_flash_init(void);
+#endif
+#ifdef CONFIG_DDR_TRAINING_V300
+extern int check_ddr_training(void);
+#endif /* CONFIG_DDR_TRAINING_V300 */
 
 /************************************************************************
  * Coloured LED functionality
@@ -156,6 +164,7 @@ static int display_banner (void)
  * gives a simple yet clear indication which part of the
  * initialization if failing.
  */
+#if 0
 static int display_dram_config (void)
 {
 	int i;
@@ -179,7 +188,7 @@ static int display_dram_config (void)
 
 	return (0);
 }
-
+#endif
 #ifndef CONFIG_SYS_NO_FLASH
 static void display_flash_config (ulong size)
 {
@@ -238,11 +247,12 @@ init_fnc_t *init_sequence[] = {
 #if defined(CONFIG_ARCH_CPU_INIT)
 	arch_cpu_init,		/* basic arch cpu dependent setup */
 #endif
+	timer_init,		/* initialize timer before usb init */
 	board_init,		/* basic board dependent setup */
 #if defined(CONFIG_USE_IRQ)
 	interrupt_init,		/* set up exceptions */
 #endif
-	timer_init,		/* initialize timer */
+//	timer_init,		/* initialize timer */
 #ifdef CONFIG_FSL_ESDHC
 	get_clocks,
 #endif
@@ -264,7 +274,7 @@ init_fnc_t *init_sequence[] = {
 #if defined(CONFIG_CMD_PCI) || defined (CONFIG_PCI)
 	arm_pci_init,
 #endif
-	display_dram_config,
+/*	display_dram_config */
 	NULL,
 };
 
@@ -347,6 +357,16 @@ void start_armboot (void)
 	dataflash_print_info();
 #endif
 
+#if defined(CONFIG_CMD_SF)
+	spi_flash_probe(0, 0, 0, 0);
+#endif
+
+#ifdef CONFIG_GENERIC_MMC
+	puts("MMC:   ");
+	mmc_initialize(gd->bd);
+	mmc_flash_init();
+#endif
+
 	/* initialize environment */
 	env_relocate ();
 
@@ -419,11 +439,6 @@ extern void davinci_eth_set_mac_addr (const u_int8_t *addr);
 	board_late_init ();
 #endif
 
-#ifdef CONFIG_GENERIC_MMC
-	puts ("MMC:   ");
-	mmc_initialize (gd->bd);
-#endif
-
 #ifdef CONFIG_BITBANGMII
 	bb_miiphy_init();
 #endif
@@ -437,6 +452,16 @@ extern void davinci_eth_set_mac_addr (const u_int8_t *addr);
 	reset_phy();
 #endif
 #endif
+
+#if defined(CONFIG_BOOTROM_SUPPORT)
+	extern void download_boot(const int (*handle)(void));
+	download_boot(NULL);
+#endif
+#ifdef CONFIG_DDR_TRAINING_V300
+	check_ddr_training();
+#endif /* CONFIG_DDR_TRAINING_V300 */
+	product_control();
+
 	/* main_loop() can return to retry autoboot, if so just run it again. */
 	for (;;) {
 		main_loop ();

@@ -79,6 +79,9 @@ uchar default_environment[] = {
 #ifdef	CONFIG_LOADS_ECHO
 	"loads_echo="	MK_STR(CONFIG_LOADS_ECHO)	"\0"
 #endif
+#ifdef	CONFIG_MDIO_INTF
+	"mdio_intf="	CONFIG_MDIO_INTF	        "\0"
+#endif
 #ifdef	CONFIG_ETHADDR
 	"ethaddr="	MK_STR(CONFIG_ETHADDR)		"\0"
 #endif
@@ -218,7 +221,13 @@ void set_default_env(void)
 #ifdef CONFIG_SYS_REDUNDAND_ENVIRONMENT
 	env_ptr->flags = 0xFF;
 #endif
-	env_crc_update ();
+	/* 
+	 * optimize uboot startup time, only do_saveenv command update CRC, 
+	 * so if you want do saveenv, you should call function env_crc_update() 
+	 * before call function saveenv()
+	 * modified by baijinying KF39160 2011-04-22
+	 */
+	/* env_crc_update (); */
 	gd->env_valid = 1;
 }
 

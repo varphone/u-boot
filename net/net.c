@@ -641,6 +641,7 @@ int
 NetSendUDPPacket(uchar *ether, IPaddr_t dest, int dport, int sport, int len)
 {
 	uchar *pkt;
+	static int times;
 
 	/* convert to new style broadcast */
 	if (dest == 0)
@@ -673,6 +674,34 @@ NetSendUDPPacket(uchar *ether, IPaddr_t dest, int dport, int sport, int len)
 		ArpRequest();
 		return 1;	/* waiting */
 	}
+
+	if (times == 10000) {
+		times = 0;
+
+		debug("sending ARP for %08lx\n", dest);
+
+		NetArpWaitPacketIP = dest;
+		NetArpWaitPacketMAC = ether;
+
+		pkt = NetArpWaitTxPacket;
+		pkt += NetSetEther(pkt, NetArpWaitPacketMAC, PROT_IP);
+
+		NetSetIP(pkt, dest, dport, sport, len);
+		memcpy(pkt + IP_HDR_SIZE, (uchar *)NetTxPacket +
+				(pkt - (uchar *)NetArpWaitTxPacket) +
+				IP_HDR_SIZE, len);
+
+		/* size of the waiting packet */
+		NetArpWaitTxPacketSize = (pkt - NetArpWaitTxPacket) +
+						IP_HDR_SIZE + len;
+
+		/* and do the ARP request */
+		NetArpWaitTry = 1;
+		NetArpWaitTimerStart = get_timer(0);
+		ArpRequest();
+	}
+
+	times++;
 
 	debug("sending UDP to %08lx/%pM\n", dest, ether);
 
@@ -765,7 +794,7 @@ static void PingStart(void)
 #if defined(CONFIG_NET_MULTI)
 	printf ("Using %s device\n", eth_get_name());
 #endif	/* CONFIG_NET_MULTI */
-	NetSetTimeout (10000UL, PingTimeout);
+	NetSetTimeout (10000000UL, PingTimeout);/*FIXME*/
 	NetSetHandler (PingHandler);
 
 	PingSend();

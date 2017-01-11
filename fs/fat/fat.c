@@ -272,6 +272,7 @@ get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size)
 {
 	int idx = 0;
 	__u32 startsect;
+	int blknum = 0;
 
 	if (clustnum > 0) {
 		startsect = mydata->data_begin + clustnum*mydata->clust_size;
@@ -280,15 +281,20 @@ get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size)
 	}
 
 	FAT_DPRINT("gc - clustnum: %d, startsect: %d\n", clustnum, startsect);
-	if (disk_read(startsect, size/FS_BLOCK_SIZE , buffer) < 0) {
-		FAT_DPRINT("Error reading data\n");
-		return -1;
+
+	blknum = size/FS_BLOCK_SIZE;
+	if (blknum) {
+		if (disk_read(startsect, size/FS_BLOCK_SIZE , buffer) < 0) {
+			FAT_ERROR("Error reading data\n");
+			return -1;
+		}
 	}
+
 	if(size % FS_BLOCK_SIZE) {
 		__u8 tmpbuf[FS_BLOCK_SIZE];
 		idx= size/FS_BLOCK_SIZE;
 		if (disk_read(startsect + idx, 1, tmpbuf) < 0) {
-			FAT_DPRINT("Error reading data\n");
+			FAT_ERROR("Error reading data\n");
 			return -1;
 		}
 		buffer += idx*FS_BLOCK_SIZE;
