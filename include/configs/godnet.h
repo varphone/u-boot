@@ -290,5 +290,9 @@
 
 #define CONFIG_OSD_ENABLE
 
+/* Enable run and source command */
+#define CONFIG_CMD_RUN				1
+#define CONFIG_CMD_SOURCE			1
+
 #endif	/* __CONFIG_H */
 
