@@ -119,9 +119,9 @@
  ------------------------------------------------------------------------*/
 #define CONFIG_BOOTDELAY    1
 #define CONFIG_BOOTARGS "mem=64M console=ttyAMA0,115200"
-#define CONFIG_NETMASK  255.255.255.0       /* talk on MY local net */
+#define CONFIG_NETMASK  255.255.0.0       /* talk on MY local net */
 #define CONFIG_IPADDR   192.168.1.10        /* static IP I currently own */
-#define CONFIG_SERVERIP 192.168.1.1     /* current IP of tftp server ip */
+#define CONFIG_SERVERIP 192.168.0.7     /* current IP of tftp server ip */
 #define CONFIG_ETHADDR  00:00:23:34:45:66
 #define CONFIG_BOOTFILE "uImage"        /* file to load */
 #define CONFIG_BAUDRATE         115200
