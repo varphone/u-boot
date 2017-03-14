@@ -294,5 +294,8 @@
 #define CONFIG_CMD_RUN				1
 #define CONFIG_CMD_SOURCE			1
 
+/* Enable sleep etc command */
+#define CONFIG_CMD_MISC				1
+
 #endif	/* __CONFIG_H */
 
