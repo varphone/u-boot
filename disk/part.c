@@ -40,6 +40,7 @@
      defined(CONFIG_CMD_SCSI) || \
      defined(CONFIG_CMD_USB) || \
      defined(CONFIG_MMC) || \
+     defined(CONFIG_RAM_DISK) || \
      defined(CONFIG_SYSTEMACE) )
 
 struct block_drvr {
@@ -68,6 +69,9 @@ static const struct block_drvr block_drvr[] = {
 #endif
 #if defined(CONFIG_CMD_MG_DISK)
 	{ .name = "mgd", .get_dev = mg_disk_get_dev, },
+#endif
+#if defined(CONFIG_RAM_DISK)
+	{ .name = "rmd", .get_dev = ram_disk_get_dev, },
 #endif
 	{ },
 };
@@ -103,6 +107,7 @@ block_dev_desc_t *get_dev(char* ifname, int dev)
      defined(CONFIG_CMD_SCSI) || \
      defined(CONFIG_CMD_USB) || \
      defined(CONFIG_MMC) || \
+     defined(CONFIG_RAM_DISK) || \
      defined(CONFIG_SYSTEMACE) )
 
 /* ------------------------------------------------------------------------- */
@@ -221,6 +226,7 @@ void dev_print (block_dev_desc_t *dev_desc)
      defined(CONFIG_CMD_SCSI) || \
      defined(CONFIG_CMD_USB) || \
      defined(CONFIG_MMC)		|| \
+     defined(CONFIG_RAM_DISK) || \
      defined(CONFIG_SYSTEMACE) )
 
 #if defined(CONFIG_MAC_PARTITION) || \

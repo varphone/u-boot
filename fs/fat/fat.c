@@ -80,7 +80,7 @@ fat_register_device(block_dev_desc_t *dev_desc, int part_no)
 	}
 	if (buffer[DOS_PART_MAGIC_OFFSET] != 0x55 ||
 		buffer[DOS_PART_MAGIC_OFFSET + 1] != 0xaa) {
-		/* no signature found */
+		printf ("** No signature found **\n");
 		return -1;
 	}
 #if (defined(CONFIG_CMD_IDE) || \
@@ -89,6 +89,7 @@ fat_register_device(block_dev_desc_t *dev_desc, int part_no)
      defined(CONFIG_CMD_SCSI) || \
      defined(CONFIG_CMD_USB) || \
      defined(CONFIG_MMC) || \
+     defined(CONFIG_RAM_DISK) || \
      defined(CONFIG_SYSTEMACE) )
 	/* First we assume, there is a MBR */
 	if (!get_partition_info (dev_desc, part_no, &info)) {

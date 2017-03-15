@@ -176,6 +176,7 @@ COBJS-$(CONFIG_USB_KEYBOARD) += usb_kbd.o
 AOBJS-$(CONFIG_DDR_TRAINING_V300) += ddr_training_entry.o
 COBJS-$(CONFIG_DDR_TRAINING_V300) += cmd_ddr_training_v300.o
 COBJS-$(CONFIG_DDR_TRAINING_HI3535)  += hi3535_ddr_training_printf.o
+COBJS-$(CONFIG_RAM_DISK) += cmd_ramdisk.o
 
 sinclude Makefile-osd
 

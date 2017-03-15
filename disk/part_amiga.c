@@ -31,6 +31,7 @@
     defined(CONFIG_CMD_SCSI) || \
     defined(CONFIG_CMD_USB) || \
     defined(CONFIG_MMC) || \
+    defined(CONFIG_RAM_DISK) || \
     defined(CONFIG_SYSTEMACE)
 
 #undef AMIGA_DEBUG

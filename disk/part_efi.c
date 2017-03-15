@@ -42,6 +42,7 @@
     defined(CONFIG_CMD_SCSI) || \
     defined(CONFIG_CMD_USB) || \
     defined(CONFIG_MMC) || \
+    defined(CONFIG_RAM_DISK) || \
     defined(CONFIG_SYSTEMACE)
 
 /* Convert char[2] in little endian format to the host format integer

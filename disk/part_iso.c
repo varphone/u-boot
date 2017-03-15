@@ -31,6 +31,7 @@
     defined(CONFIG_CMD_SATA) || \
     defined(CONFIG_CMD_USB) || \
     defined(CONFIG_MMC) || \
+    defined(CONFIG_RAM_DISK) || \
     defined(CONFIG_SYSTEMACE)
 
 /* #define	ISO_PART_DEBUG */
