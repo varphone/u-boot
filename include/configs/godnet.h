@@ -202,7 +202,7 @@
  ------------------------------------------------------------------------*/
 
 #define CONFIG_VERSION_VARIABLE  1 /*used in common/main.c*/
-#define CONFIG_SYS_PROMPT  "hisilicon # "	/* Monitor Command Prompt */
+#define CONFIG_SYS_PROMPT  ">> "	/* Monitor Command Prompt */
 #define CONFIG_SYS_CBSIZE  1024            /* Console I/O Buffer Size  */
 #define CONFIG_SYS_PBSIZE  (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)
 
@@ -296,6 +296,15 @@
 
 /* Enable sleep etc command */
 #define CONFIG_CMD_MISC				1
+
+/* Enable ram disk */
+#define CONFIG_PARTITIONS			1
+#define CONFIG_RAM_DISK				1
+#define CONFIG_RAM_DISK_START			0x88000000
+#define CONFIG_RAM_DISK_SIZE			0x1000000
+
+/* Enable crc32 verify */
+#define CONFIG_CRC32_VERIFY			1
 
 #endif	/* __CONFIG_H */
 
