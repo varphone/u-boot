@@ -337,8 +337,8 @@
 #define CONFIG_BOOTDELAY			1
 
 #define CONFIG_CONSOLE_DEV			"ttymxc0"
-#define CONFIG_MMCROOT				"/dev/mmcblk3p3"  /* SDHC4 */
-#define CONFIG_MMCROOT_OVERLAY			"overlayroot=/dev/mmcblk3p4:rw:ext4"
+#define CONFIG_MMCROOT				"/dev/mmcblk3p2"  /* SDHC4 */
+#define CONFIG_MMCROOT_OVERLAY			"overlayroot=/dev/mmcblk3p4:rw:f2fs"
 #define CONFIG_LOADADDR    			0x12000000
 #define CONFIG_SYS_TEXT_BASE    		0x17800000
 #define CONFIG_SYS_LOAD_ADDR    		CONFIG_LOADADDR
@@ -359,13 +359,13 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
-	"uboot_file=u-boot-"CONFIG_BOARD_NAME"-"EK_SPEC".imx\0" \
-	"image_file=zImage-"CONFIG_BOARD_NAME"-"EK_SPEC"\0" \
+	"uboot_file=u-boot.imx\0" \
+	"image_file=zImage\0" \
 	"fdt_file="CONFIG_BOARD_NAME"-"EK_SPEC".dtb\0" \
 	"fdt_addr=0x18000000\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"fdt_high=0xffffffff\0"	  \
-	"initrd_file=initrd-"CONFIG_BOARD_NAME"-"EK_SPEC".img\0" \
+	"initrd_file=initrd.img\0" \
 	"initrd_addr=0x13000000\0" \
 	"initrd_high=0xffffffff\0" \
 	"initrd_size=0x1000000\0" \
@@ -391,9 +391,9 @@
 		"else " \
 			"setenv get_cmd tftp; " \
 		"fi;\0" \
-	"loadinitrd=ext4load mmc ${mmcdev}:${mmcpart} ${initrd_addr} ${initrd_file}\0" \
-	"loadimage=ext4load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
-	"loadfdt=ext4load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"loadinitrd=fatload mmc ${mmcdev}:${mmcpart} ${initrd_addr} ${initrd_file}\0" \
+	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
+	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"update_uboot=" \
 		"if run set_net_cmd; then " \
 			"if ${get_cmd} ${loadaddr} ${uboot_file}; then " \
