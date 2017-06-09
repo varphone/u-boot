@@ -926,6 +926,12 @@ int board_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_TARGET_MYIMX6EK200
+int power_init_board(void)
+{
+	return 0;
+}
+#else
 int power_init_board(void)
 {
 	struct pmic *pfuze;
@@ -1010,6 +1016,7 @@ int power_init_board(void)
 
 	return 0;
 }
+#endif
 
 #ifdef CONFIG_LDO_BYPASS_CHECK
 void ldo_mode_set(int ldo_bypass)
