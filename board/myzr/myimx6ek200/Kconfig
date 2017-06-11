@@ -1,0 +1,15 @@
+if TARGET_MYIMX6EK200
+
+config SYS_BOARD
+	default "myimx6ek200"
+
+config SYS_VENDOR
+	default "myzr"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "myimx6ek200"
+
+endif
