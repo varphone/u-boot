@@ -1,0 +1,8 @@
+MYIMX6EK200 BOARD
+M:	Varphone Wong <varphone@qq.com>
+S:	Maintained
+F:	board/myzr/myimx6ek200/
+F:	include/configs/myimx6ek200.h
+F:	configs/myimx6ek200_6q_defconfig
+F:	configs/myimx6ek200_6s_defconfig
+F:	configs/myimx6ek200_6s_1g_defconfig

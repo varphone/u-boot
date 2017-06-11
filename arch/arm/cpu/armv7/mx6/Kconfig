@@ -238,6 +238,12 @@ config TARGET_MX6SXSCM
         select DM
         select DM_THERMAL
 
+config TARGET_MYIMX6EK200
+	bool "myimx6ek200"
+	select SUPPORT_SPL
+	select DM
+	select DM_THERMAL
+
 endchoice
 
 config SYS_SOC
@@ -278,5 +284,6 @@ source "board/wandboard/Kconfig"
 source "board/warp/Kconfig"
 source "board/freescale/mx6dqscm/Kconfig"
 source "board/freescale/mx6sxscm/Kconfig"
+source "board/myzr/myimx6ek200/Kconfig"
 
 endif
