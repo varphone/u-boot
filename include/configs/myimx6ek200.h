@@ -17,7 +17,7 @@
 
 #define CONFIG_MXC_UART_BASE		UART1_BASE
 #define CONFIG_CONSOLE_DEV		"ttymxc0"
-#define CONFIG_MMCROOT			"/dev/mmcblk2p2"  /* SDHC3 */
+#define CONFIG_MMCROOT			"/dev/mmcblk3p2 rootfstype=squashfs overlayroot=/dev/mmcblk3p4:rw:ext4"  /* eMMC */
 
 #if defined(CONFIG_MX6QP)
 #define PHYS_SDRAM_SIZE			(1u * 1024 * 1024 * 1024)
