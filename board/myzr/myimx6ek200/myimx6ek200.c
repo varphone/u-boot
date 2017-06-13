@@ -633,6 +633,51 @@ static void enable_lvds(struct display_info_t const *dev)
 	writel(reg, &iomux->gpr[2]);
 }
 
+#define MTY065_I2C_BUS	2
+#define MTY065_I2C_ADDR	0x1b
+#define MTY065
+static void enable_mty065(struct display_info_t const* dev)
+{
+	int ret;
+	uint8_t buf[64];
+
+	i2c_set_bus_num(dev->bus);
+
+	/* Set input source select */
+	buf[0] = 0x00;
+	i2c_write(dev->addr, 0x05, 1, buf, 1);
+
+	/* Set external video source format */
+	buf[0] = 0x41;
+	i2c_write(dev->addr, 0x07, 1, buf, 1);
+
+	/* Set image crop */
+	buf[0] = 0;
+	buf[1] = 0;
+	buf[2] = 0;
+	buf[3] = 0;
+	buf[4] = dev->mode.xres & 0xff;
+	buf[5] = (dev->mode.xres & 0xff00) >> 8;
+	buf[6] = dev->mode.yres & 0xff;
+	buf[7] = (dev->mode.yres & 0xff00) >> 8;
+	i2c_write(dev->addr, 0x10, 1, buf, 8);
+
+	enable_lvds(dev);
+}
+
+static int detect_mty065(struct display_info_t const *dev)
+{
+	int ret;
+
+	ret = i2c_set_bus_num(dev->bus);
+	if (ret != 0) {
+		printf("I2C Bus %d error.\n", dev->bus);
+		return ret;
+	}
+
+	return i2c_probe(dev->addr);
+}
+
 struct display_info_t const displays[] = {{
 	.bus	= -1,
 	.addr	= 0,
@@ -693,6 +738,27 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 10,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= MTY065_I2C_BUS,
+	.addr	= MTY065_I2C_ADDR,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= detect_mty065,
+	.enable	= enable_mty065,
+	.mode	= {
+		.name           = "MTY065-720P",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 720,
+		.pixclock       = 15619,
+		.left_margin    = 80,
+		.right_margin   = 48,
+		.upper_margin   = 13,
+		.lower_margin   = 3,
+		.hsync_len      = 32,
+		.vsync_len      = 5,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+
 } } };
 size_t display_count = ARRAY_SIZE(displays);
 
