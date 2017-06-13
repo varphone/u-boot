@@ -47,11 +47,10 @@
 #define CONFIG_ETHPRIME			"FEC"
 #define CONFIG_FEC_MXC_PHYADDR		0
 #define CONFIG_FEC_ENET_DEV		0
-#define CONFIG_PHY_SMSC
 
 #define CONFIG_PHYLIB
-#define CONFIG_PHY_ATHEROS
-#define CONFIG_ETHADDR			AC:4B:51:B5:FC:1D
+#define CONFIG_PHY_SMSC
+#define CONFIG_ETHADDR			"AC:4B:51:B5:FC:1D"
 #define CONFIG_SERVERIP 		192.168.0.7
 #define CONFIG_IPADDR    		192.168.1.99
 #define CONFIG_NETMASK    		255.255.0.0
@@ -103,7 +102,7 @@
 #endif
 
 #define CONFIG_MFG_ENV_SETTINGS \
-	"ethaddr=" __stringify(CONFIG_ETHADDR) "\0" \
+	"ethaddr=" CONFIG_ETHADDR "\0" \
 	"mfgtool_args=setenv bootargs console=" CONFIG_CONSOLE_DEV ",115200 " \
 		"rdinit=/linuxrc " \
 		"g_mass_storage.stall=0 g_mass_storage.removable=1 " \
@@ -159,29 +158,36 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
-	"script=boot.scr\0" \
-	"image_file=zImage\0" \
-	"fdt_file=" CONFIG_BOARD_NAME "-" EK_SPEC PR_SPEC ".dtb\0" \
-	"fdt_addr=0x18000000\0" \
-	"boot_fdt=try\0" \
-	"ip_dyn=yes\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
+	"display=\0" \
+	"fb0_lvds1=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin1\0" \
+	"fb1_lvds1=video=mxcfb1:dev=ldb,if=RGB666 ldb=sin1\0" \
+	"fb0_lvds0=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin0\0" \
+	"fb1_lvds0=video=mxcfb1:dev=ldb,if=RGB666 ldb=sin0\0" \
+	"fb0_hdmi=video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24\0" \
+	"fb1_hdmi=video=mxcfb1:dev=hdmi,1920x1080M@60,if=RGB24\0" \
+	"fb0_lcd=video=mxcfb0:dev=lcd,SEIKO-WVGA,if=RGB24\0" \
+	"fb1_lcd=video=mxcfb1:dev=lcd,SEIKO-WVGA,if=RGB24\0" \
+	"lvds_sync=video=mxcfb0:dev=ldb,if=RGB666 ldb=dul1\0" \
+	"fdt_addr=0x18000000\0" \
+	"fdt_file=" CONFIG_BOARD_NAME "-" EK_SPEC PR_SPEC ".dtb\0" \
 	"fdt_high=0xffffffff\0"	  \
 	"initrd_file=initrd.img\0" \
 	"initrd_high=0xffffffff\0" \
+	"image_file=zImage\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
-	"smp=" CONFIG_SYS_NOSMP "\0"\
 	"mmcargs=setenv bootargs console=${console},${baudrate} ${smp} " \
-		"root=${mmcroot}\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
-		"source\0" \
+		"root=${mmcroot} ${display}\0" \
+	"bootscript=echo Running bootscript from mmc ...; source\0" \
 	"loadbootscript=" \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"loadinitrd=fatload mmc ${mmcdev}:{mmcpart} ${initrd_addr} ${initrd_file}\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0"
+	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
+	"script=boot.scr\0" \
+	"smp=" CONFIG_SYS_NOSMP "\0"
 
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev};" \
