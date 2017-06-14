@@ -643,14 +643,6 @@ static void enable_mty065(struct display_info_t const* dev)
 
 	i2c_set_bus_num(dev->bus);
 
-	/* Set input source select */
-	buf[0] = 0x00;
-	i2c_write(dev->addr, 0x05, 1, buf, 1);
-
-	/* Set external video source format */
-	buf[0] = 0x41;
-	i2c_write(dev->addr, 0x07, 1, buf, 1);
-
 	/* Set image crop */
 	buf[0] = 0;
 	buf[1] = 0;
@@ -661,6 +653,31 @@ static void enable_mty065(struct display_info_t const* dev)
 	buf[6] = dev->mode.yres & 0xff;
 	buf[7] = (dev->mode.yres & 0xff00) >> 8;
 	i2c_write(dev->addr, 0x10, 1, buf, 8);
+
+	/*
+	 * Set display size
+	 * must be after the image crop
+	 */
+	buf[0] = 854 & 0xff;
+	buf[1] = (854 & 0xff00) >> 8;
+	buf[2] = 480 & 0xff;
+	buf[3] = (480 & 0xff00) >> 8;
+	buf[4] = dev->mode.xres & 0xff;
+	buf[5] = (dev->mode.xres & 0xff00) >> 8;
+	buf[6] = dev->mode.yres & 0xff;
+	buf[7] = (dev->mode.yres & 0xff00) >> 8;
+	i2c_write(dev->addr, 0x12, 1, buf, 8);
+
+	/* Set external video source format */
+	buf[0] = 0x41; /* RGB666, 18 bits */
+	i2c_write(dev->addr, 0x07, 1, buf, 1);
+
+	/*
+	 * Set input source select
+	 * must be last to apply above settings
+	 */
+	buf[0] = 0x00; /* external */
+	i2c_write(dev->addr, 0x05, 1, buf, 1);
 
 	enable_lvds(dev);
 }
