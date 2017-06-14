@@ -682,6 +682,10 @@ static void enable_mty065(struct display_info_t const* dev)
 	enable_lvds(dev);
 }
 
+/*
+ * Detect MTY065X Military Projector
+ * return 1 if found else 0
+ */
 static int detect_mty065(struct display_info_t const *dev)
 {
 	int ret;
@@ -689,10 +693,10 @@ static int detect_mty065(struct display_info_t const *dev)
 	ret = i2c_set_bus_num(dev->bus);
 	if (ret != 0) {
 		printf("I2C Bus %d error.\n", dev->bus);
-		return ret;
+		return 0;
 	}
 
-	return i2c_probe(dev->addr);
+	return i2c_probe(dev->addr) == 0 ? 1 : 0;
 }
 
 struct display_info_t const displays[] = {{
