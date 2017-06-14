@@ -868,6 +868,7 @@ int board_eth_init(bd_t *bis)
 	int ret;
 
 	setup_iomux_enet();
+	setup_pcie();
 
 	return cpu_eth_init(bis);
 }
