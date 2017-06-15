@@ -643,6 +643,10 @@ static void enable_mty065(struct display_info_t const* dev)
 
 	i2c_set_bus_num(dev->bus);
 
+	/* Freeze */
+	buf[0] = 1;
+	i2c_write(dev->addr, 0x1a, 1, buf, 1);
+
 	/* Set image crop */
 	buf[0] = 0;
 	buf[1] = 0;
@@ -653,6 +657,13 @@ static void enable_mty065(struct display_info_t const* dev)
 	buf[6] = dev->mode.yres & 0xff;
 	buf[7] = (dev->mode.yres & 0xff00) >> 8;
 	i2c_write(dev->addr, 0x10, 1, buf, 8);
+
+	/* Set input size */
+	buf[0] = dev->mode.xres & 0xff;
+	buf[1] = (dev->mode.xres & 0xff00) >> 8;
+	buf[2] = dev->mode.yres & 0xff;
+	buf[3] = (dev->mode.yres & 0xff00) >> 8;
+	i2c_write(dev->addr, 0x2e, 1, buf, 4);
 
 	/*
 	 * Set display size
@@ -678,6 +689,19 @@ static void enable_mty065(struct display_info_t const* dev)
 	 */
 	buf[0] = 0x00; /* external */
 	i2c_write(dev->addr, 0x05, 1, buf, 1);
+
+	/* Clear test pattern */
+	buf[0] = 0x00;
+	buf[1] = 0x00;
+	buf[2] = 0x00;
+	buf[3] = 0x00;
+	buf[4] = 0x00;
+	buf[5] = 0x00;
+	i2c_write(dev->addr, 0x0b, 1, buf, 6);
+
+	/* Unfreeze */
+	buf[0] = 0x00;
+	i2c_write(dev->addr, 0x1a, 1, buf, 1);
 
 	enable_lvds(dev);
 }
