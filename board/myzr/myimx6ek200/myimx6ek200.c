@@ -647,6 +647,10 @@ static void enable_mty065(struct display_info_t const* dev)
 	buf[0] = 1;
 	i2c_write(dev->addr, 0x1a, 1, buf, 1);
 
+	/* Set image curtain */
+	buf[0] = 0x00;
+	i2c_write(dev->addr, 0x16, 1, buf, 1);
+
 	/* Set image crop */
 	buf[0] = 0;
 	buf[1] = 0;
