@@ -82,13 +82,21 @@
 #define EK_SPEC    				"6u"
 #endif
 
-#if defined(CONFIG_BOARD_CVR_MIL_V1)
+#if defined(CONFIG_PR_CVR_MIL_V1)
+#define CONFIG_DISPLAY				"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
+#define CONFIG_TFTPROOT				"cvr-mil-v1/images/"
 #define PR_SPEC					"-cm1"
-#elif defined(CONFIG_BOARD_CVR_MIL_V2)
+#elif defined(CONFIG_PR_CVR_MIL_V2)
+#define CONFIG_DISPLAY				"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
+#define CONFIG_TFTPROOT				"cvr-mil-v2/images/"
 #define PR_SPEC					"-cm2"
-#elif defined(CONFIG_BOARD_CVR_MIL_V3)
+#elif defined(CONFIG_PR_CVR_MIL_V3)
+#define CONFIG_DISPLAY				"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
+#define CONfIG_TFTPROOT				"cvr-mil-v3/images/"
 #define PR_SPEC					"-cm3"
 #else
+#define CONFIG_DISPLAY
+#define CONFIG_TFTPROOT
 #define PR_SPEC
 #endif
 
@@ -159,16 +167,16 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
-	"display=\0" \
-	"fb0_lvds1=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin1\0" \
-	"fb1_lvds1=video=mxcfb1:dev=ldb,if=RGB666 ldb=sin1\0" \
-	"fb0_lvds0=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin0\0" \
-	"fb1_lvds0=video=mxcfb1:dev=ldb,if=RGB666 ldb=sin0\0" \
-	"fb0_hdmi=video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24\0" \
-	"fb1_hdmi=video=mxcfb1:dev=hdmi,1920x1080M@60,if=RGB24\0" \
+	"display=" CONFIG_DISPLAY "\0" \
+	"fb0_lvds0=video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin0\0" \
+	"fb1_lvds0=video=mxcfb1:dev=ldb,if=RGB666,bpp=32 ldb=sin0\0" \
+	"fb0_lvds1=video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1\0" \
+	"fb1_lvds1=video=mxcfb1:dev=ldb,if=RGB666,bpp=32 ldb=sin1\0" \
+	"fb0_hdmi=video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32\0" \
+	"fb1_hdmi=video=mxcfb1:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32\0" \
 	"fb0_lcd=video=mxcfb0:dev=lcd,SEIKO-WVGA,if=RGB24\0" \
 	"fb1_lcd=video=mxcfb1:dev=lcd,SEIKO-WVGA,if=RGB24\0" \
-	"lvds_sync=video=mxcfb0:dev=ldb,if=RGB666 ldb=dul1\0" \
+	"lvds_sync=video=mxcfb0:dev=ldb,if=RGB666 ldb=dul1,bpp=32\0" \
 	"fdt_addr=0x18000000\0" \
 	"fdt_file=" CONFIG_BOARD_NAME "-" EK_SPEC PR_SPEC ".dtb\0" \
 	"fdt_high=0xffffffff\0"	  \
@@ -187,7 +195,10 @@
 	"loadinitrd=fatload mmc ${mmcdev}:{mmcpart} ${initrd_addr} ${initrd_file}\0" \
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
 	"script=boot.scr\0" \
-	"smp=" CONFIG_SYS_NOSMP "\0"
+	"smp=" CONFIG_SYS_NOSMP "\0" \
+	"splashpos=m,m\0" \
+	"tftpboot=tftp ${tftproot}boot-tftp.scr; source\0" \
+	"tftproot=" CONFIG_TFTPROOT "\0"
 
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev};" \
