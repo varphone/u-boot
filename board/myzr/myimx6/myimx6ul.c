@@ -410,23 +410,6 @@ static struct lcd_panel_info_t const displays[] = {{
 		.vsync_len      = 10,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
-} },{
-	.lcdif_base_addr = LCDIF1_BASE_ADDR,
-	.depth = 24,
-	.enable	= do_enable_parallel_lcd,
-	.mode	= {
-		.name			= "AT070",
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 108695,
-		.left_margin    = 8,
-		.right_margin   = 4,
-		.upper_margin   = 2,
-		.lower_margin   = 4,
-		.hsync_len      = 41,
-		.vsync_len      = 10,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
 } } };
 
 int board_video_skip(void)
