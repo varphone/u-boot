@@ -404,6 +404,98 @@ static void enable_lvds(struct display_info_t const *dev)
 }
 #endif
 
+#define MTY065_I2C_BUS	2
+#define MTY065_I2C_ADDR	0x1b
+static void enable_mty065(struct display_info_t const* dev)
+{
+	uint8_t buf[64];
+
+	i2c_set_bus_num(dev->bus);
+
+	/* Freeze */
+	buf[0] = 1;
+	i2c_write(dev->addr, 0x1a, 1, buf, 1);
+
+	/* Set image curtain */
+	buf[0] = 0x00;
+	i2c_write(dev->addr, 0x16, 1, buf, 1);
+
+	/* Set image crop */
+	buf[0] = 0;
+	buf[1] = 0;
+	buf[2] = 0;
+	buf[3] = 0;
+	buf[4] = dev->mode.xres & 0xff;
+	buf[5] = (dev->mode.xres & 0xff00) >> 8;
+	buf[6] = dev->mode.yres & 0xff;
+	buf[7] = (dev->mode.yres & 0xff00) >> 8;
+	i2c_write(dev->addr, 0x10, 1, buf, 8);
+
+	/* Set input size */
+	buf[0] = dev->mode.xres & 0xff;
+	buf[1] = (dev->mode.xres & 0xff00) >> 8;
+	buf[2] = dev->mode.yres & 0xff;
+	buf[3] = (dev->mode.yres & 0xff00) >> 8;
+	i2c_write(dev->addr, 0x2e, 1, buf, 4);
+
+	/*
+	 * Set display size
+	 * must be after the image crop
+	 */
+	buf[0] = 854 & 0xff;
+	buf[1] = (854 & 0xff00) >> 8;
+	buf[2] = 480 & 0xff;
+	buf[3] = (480 & 0xff00) >> 8;
+	buf[4] = dev->mode.xres & 0xff;
+	buf[5] = (dev->mode.xres & 0xff00) >> 8;
+	buf[6] = dev->mode.yres & 0xff;
+	buf[7] = (dev->mode.yres & 0xff00) >> 8;
+	i2c_write(dev->addr, 0x12, 1, buf, 8);
+
+	/* Set external video source format */
+	buf[0] = 0x41; /* RGB666, 18 bits */
+	i2c_write(dev->addr, 0x07, 1, buf, 1);
+
+	/*
+	 * Set input source select
+	 * must be last to apply above settings
+	 */
+	buf[0] = 0x00; /* external */
+	i2c_write(dev->addr, 0x05, 1, buf, 1);
+
+	/* Clear test pattern */
+	buf[0] = 0x00;
+	buf[1] = 0x00;
+	buf[2] = 0x00;
+	buf[3] = 0x00;
+	buf[4] = 0x00;
+	buf[5] = 0x00;
+	i2c_write(dev->addr, 0x0b, 1, buf, 6);
+
+	/* Unfreeze */
+	buf[0] = 0x00;
+	i2c_write(dev->addr, 0x1a, 1, buf, 1);
+
+	enable_lvds(dev);
+}
+
+/*
+ * Detect MTY065X Military Projector
+ * return 1 if found else 0
+ */
+static int detect_mty065(struct display_info_t const *dev)
+{
+	int ret;
+
+	ret = i2c_set_bus_num(dev->bus);
+	if (ret != 0) {
+		printf("I2C Bus %d error.\n", dev->bus);
+		return 0;
+	}
+
+	return i2c_probe(dev->addr) == 0 ? 1 : 0;
+}
+
 struct display_info_t const displays[] = {{
 #if !defined(CONFIG_TARGET_MYIMX6QJH)
 	.bus	= -1,
@@ -468,6 +560,26 @@ struct display_info_t const displays[] = {{
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 #endif
+} }, {
+	.bus	= MTY065_I2C_BUS,
+	.addr	= MTY065_I2C_ADDR,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= detect_mty065,
+	.enable	= enable_mty065,
+	.mode	= {
+		.name           = "MTY065-720P",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 720,
+		.pixclock       = 15619,
+		.left_margin    = 80,
+		.right_margin   = 48,
+		.upper_margin   = 13,
+		.lower_margin   = 3,
+		.hsync_len      = 32,
+		.vsync_len      = 5,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
 } } };
 size_t display_count = ARRAY_SIZE(displays);
 
