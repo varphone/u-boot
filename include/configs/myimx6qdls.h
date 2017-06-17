@@ -179,8 +179,11 @@
 #define CONFIG_PHY_MICREL_KSZ9031
 #endif
 
-#define CONFIG_SERVERIP				192.168.18.18
-#define CONFIG_IPADDR				192.168.18.81
+#define CONFIG_OVERWITE_ETHADDR_ONCE
+#define CONFIG_ETHADDR				AC:4B:51:B5:FC:1D
+#define CONFIG_SERVERIP				192.168.0.7
+#define CONFIG_IPADDR				192.168.1.99
+#define CONFIG_NETMASK   	 		255.255.0.0
 
 #define CONFIG_ARP_TIMEOUT			200UL
 
@@ -214,7 +217,7 @@
 #define CONFIG_USB_ETHER_ASIX
 #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS		0
-#define CONFIG_USB_MAX_CONTROLLER_COUNT	1 /* Enabled USB controller number */
+#define CONFIG_USB_MAX_CONTROLLER_COUNT	2 /* Enabled USB controller number */
 #endif
 
 /* SATA ********************************************************************* */
@@ -247,6 +250,9 @@
 #define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
+#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* FrameBuffer ************************************************************** */
@@ -302,6 +308,24 @@
 #define EK_SPEC				"6u"
 #endif
 
+#if defined(CONFIG_PR_CVR_MIL_V1)
+#define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
+#define CONFIG_TFTPROOT		"cvr-mil-v1/images/"
+#define PR_SPEC			"-cm1"
+#elif defined(CONFIG_PR_CVR_MIL_V2)
+#define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
+#define CONFIG_TFTPROOT		"cvr-mil-v2/images/"
+#define PR_SPEC			"-cm2"
+#elif defined(CONFIG_PR_CVR_MIL_V3)
+#define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
+#define CONFIG_TFTPROOT		"cvr-mil-v3/images/"
+#define PR_SPEC			"-cm3"
+#else
+#define CONFIG_DISPLAY
+#define CONFIG_TFTPROOT
+#define PR_SPEC
+#endif
+
 /* CMD ********************************************************************** */
 #define CONFIG_FAT_WRITE
 #include <config_cmd_default.h>
@@ -336,7 +360,7 @@
 #define CONFIG_BOOTDELAY				1
 
 #define CONFIG_CONSOLE_DEV				"ttymxc0"
-#define CONFIG_MMCROOT					"/dev/mmcblk3p2"  /* SDHC4 */
+#define CONFIG_MMCROOT					"/dev/mmcblk3p2 rootfstype=squashfs overlayroot=/dev/mmcblk3p4:rw:ext4"  /* SDHC4 */
 #define CONFIG_LOADADDR					0x12000000
 #define CONFIG_SYS_TEXT_BASE			0x17800000
 #define CONFIG_SYS_LOAD_ADDR			CONFIG_LOADADDR
@@ -357,84 +381,44 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
-	"uboot_file=uboot-"CONFIG_BOARD_NAME"-"EK_SPEC".imx\0" \
-	"image_file=zImage-myimx6\0" \
-	"fdt_file="CONFIG_BOARD_NAME"-"EK_SPEC".dtb\0" \
-	"fdt_addr=0x18000000\0" \
+	"bootscript=echo Running bootscript from mmc ...; source\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
+	"display=" CONFIG_DISPLAY "\0" \
+	"fdt_file="CONFIG_BOARD_NAME"-"EK_SPEC PR_SPEC".dtb\0" \
+	"fdt_addr=0x18000000\0" \
 	"fdt_high=0xffffffff\0"	  \
+	"image_file=zImage\0" \
+	"initrd_file=initrd.img\0" \
 	"initrd_high=0xffffffff\0" \
+	"fb0_lvds1=video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1\0" \
+	"fb1_lvds1=video=mxcfb1:dev=ldb,if=RGB666,bpp=32 ldb=sin1\0" \
+	"fb0_lvds0=video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin0\0" \
+	"fb1_lvds0=video=mxcfb1:dev=ldb,if=RGB666,bpp=32 ldb=sin0\0" \
+	"fb0_hdmi=video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32\0" \
+	"fb1_hdmi=video=mxcfb1:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32\0" \
+	"fb0_lcd=video=mxcfb0:dev=lcd,SEIKO-WVGA,if=RGB24\0" \
+	"fb1_lcd=video=mxcfb1:dev=lcd,SEIKO-WVGA,if=RGB24\0" \
+	"lvds_sync=video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=dul1\0" \
+	"loadbootscript=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
+	"loadinitrd=fatload mmc ${mmcdev}:{mmcpart} ${initrd_addr} ${initrd_file}\0" \
+	"mmcargs=setenv bootargs console=${console},${baudrate} ${smp} " \
+		"root=${mmcroot} ${display}\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
-	"smp=" CONFIG_SYS_NOSMP "\0"\
-	"ip_dyn=no\0" \
-	"display=\ \0" \
-	"fb0_lvds1=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin1\0" \
-	"fb1_lvds1=video=mxcfb1:dev=ldb,if=RGB666 ldb=sin1\0" \
-	"fb0_lvds0=video=mxcfb0:dev=ldb,if=RGB666 ldb=sin0\0" \
-	"fb1_lvds0=video=mxcfb1:dev=ldb,if=RGB666 ldb=sin0\0" \
-	"fb0_hdmi=video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24\0" \
-	"fb1_hdmi=video=mxcfb1:dev=hdmi,1920x1080M@60,if=RGB24\0" \
-	"fb0_lcd=video=mxcfb0:dev=lcd,SEIKO-WVGA,if=RGB24\0" \
-	"fb1_lcd=video=mxcfb1:dev=lcd,SEIKO-WVGA,if=RGB24\0" \
-	"lvds_sync=video=mxcfb0:dev=ldb,if=RGB666 ldb=dul1\0" \
-	"set_disp=setenv disp_args ${display}\0" \
-	"set_net_cmd=" \
-		"if test ${ip_dyn} = yes; then " \
-			"setenv get_cmd dhcp; " \
-		"else " \
-			"setenv get_cmd tftp; " \
-		"fi;\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
-	"update_uboot=" \
-		"if run set_net_cmd; then " \
-			"if ${get_cmd} ${loadaddr} ${uboot_file}; then " \
-				"sf probe "__stringify(CONFIG_SF_DEFAULT_CS)"; sf erase 0 0x200000; sf write ${loadaddr} 0x400 0x80000; " \
-			"fi; " \
-		"else " \
-			"echo FAIL: Update u-boot fail ...; " \
-		"fi;\0" \
-	"update_fdt=run set_net_cmd; ${get_cmd} ${loadaddr} ${fdt_file}; " \
-		"fatwrite mmc ${mmcdev}:${mmcpart} ${loadaddr} ${fdt_file} 0x80000 \0" \
-	"update_kern=run set_net_cmd; ${get_cmd} ${loadaddr} ${image_file}; " \
-		"fatwrite mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image_file} 0x600000 \0" \
-	"mmcargs=run set_disp; setenv bootargs console=${console},${baudrate} ${smp} " \
-	    CONFIG_BOOTARGS_CMA_SIZE \
-		"root=${mmcroot} ${disp_args}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run mmcargs; " \
-		"if run loadfdt; then " \
-			"bootz ${loadaddr} - ${fdt_addr}; " \
-		"else " \
-			"echo WARN: Cannot boot from mmc; " \
-		"fi;\0" \
-	"tftpboot=echo Booting from tftp ...; " \
-		"run mmcargs; run set_net_cmd; " \
-		"${get_cmd} ${loadaddr} ${image_file}; " \
-		"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-			"bootz ${loadaddr} - ${fdt_addr}; " \
-		"else " \
-			"echo WARN: Cannot boot from tftp; " \
-		"fi;\0" \
-	"netargs=setenv bootargs console=${console},${baudrate} ${smp} " \
-	    CONFIG_BOOTARGS_CMA_SIZE \
-		"root=/dev/nfs ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-	"netboot=echo Booting from net ...; " \
-		"run netargs; run set_net_cmd; " \
-		"${get_cmd} ${loadaddr} ${image_file}; " \
-		"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-			"bootz ${loadaddr} - ${fdt_addr}; " \
-		"else " \
-			"echo WARN: Cannot boot from net; " \
-		"fi;\0"
+	"script=boot.scr\0" \
+	"smp=" CONFIG_SYS_NOSMP "\0" \
+	"splashpos=m,m\0" \
+	"tftpboot=tftp ${tftproot}boot-tftp.scr; source\0" \
+	"tftproot=" CONFIG_TFTPROOT "\0"
 
 #define CONFIG_BOOTCOMMAND \
-	"mmc dev ${mmcdev}; " \
-	"if run loadimage; then " \
-		"run mmcboot; " \
-	"else run netboot; " \
-	"fi; " \
-
+	"mmc dev ${mmcdev};" \
+	"if mmc rescan; then " \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"fi; " \
+	"fi"
 #endif                         /* __MYIMX6_CONFIG_H */
