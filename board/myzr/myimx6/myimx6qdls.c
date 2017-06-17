@@ -58,72 +58,91 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define I2C_PAD MUX_PAD_CTRL(I2C_PAD_CTRL)
 
-#if defined(CONFIG_TARGET_MYIMX6EK200)
-#define DISP0_PWR_EN	IMX_GPIO_NR(1, 21)
-#elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
-#define DISP0_PWR_EN	IMX_GPIO_NR(4, 20)
-#endif
-
-#define USDHC3_CD_GPIO	IMX_GPIO_NR(4, 10)
-
 int dram_init(void)
 {
+#if ((defined(CONFIG_MYIMX6CB336) || defined(CONFIG_TARGET_MYIMX6LEF)) \
+	&& !defined(CONFIG_DBG_DDR))
+	gd->ram_size = imx_ddr_size() << 1;
+#else
 	gd->ram_size = imx_ddr_size();
+#endif
 	return 0;
 }
 
+#if defined(CONFIG_MYIMX6CB336)
+#define PMU_PWR_CTRL	IMX_GPIO_NR(7, 12)
+#define PMU_INT_PMU		IMX_GPIO_NR(7, 13)
+
+static iomux_v3_cfg_t const pmu_io[] = {
+	MX6_PAD_GPIO_17__GPIO7_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_GPIO_18__GPIO7_IO13 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+int pmu_init(void)
+{
+	imx_iomux_v3_setup_multiple_pads(pmu_io, ARRAY_SIZE(pmu_io));
+	
+	gpio_direction_output(PMU_PWR_CTRL, 1);
+	gpio_direction_output(PMU_INT_PMU, 1);
+
+	return 0;
+}
+#endif
+
 /* UART ********************************************************************* */
-static iomux_v3_cfg_t const uart1_pads[] = {
-#if (defined(CONFIG_TARGET_MYIMX6EK200) \
-	|| defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
+static iomux_v3_cfg_t const dbg_uart[] = {
+#if (defined(CONFIG_TARGET_MYIMX6EK200) || defined(CONFIG_TARGET_MYIMX6EK314) \
+	|| defined(CONFIG_TARGET_MYIMX6EK336) \
+	|| defined(CONFIG_TARGET_MYIMX6ACO) || defined(CONFIG_TARGET_MYIMX6QJH))
 	MX6_PAD_CSI0_DAT10__UART1_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX6_PAD_CSI0_DAT11__UART1_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
+#elif defined(CONFIG_TARGET_MYIMX6LEF)
+	MX6_PAD_SD3_DAT6__UART1_RX_DATA	| MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX6_PAD_SD3_DAT7__UART1_TX_DATA	| MUX_PAD_CTRL(UART_PAD_CTRL),
 #endif
 };
 
 static void setup_iomux_uart(void)
 {
-#if (defined(CONFIG_TARGET_MYIMX6EK200) \
-	|| defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
-	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
-#endif
+	imx_iomux_v3_setup_multiple_pads(dbg_uart, ARRAY_SIZE(dbg_uart));
 }
 
 /* SPI ********************************************************************** */
+#define ECSPI1_CS0	IMX_GPIO_NR(2, 30)
+#define ECSPI1_CS1	IMX_GPIO_NR(3, 19)
+
 static iomux_v3_cfg_t const ecspi1_pads[] = {
-#if (defined(CONFIG_MYIMX6CB200) || defined(CONFIG_MYIMX6CB314))
 	MX6_PAD_EIM_D16__ECSPI1_SCLK	| MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_EIM_D17__ECSPI1_MISO	| MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_EIM_D18__ECSPI1_MOSI	| MUX_PAD_CTRL(SPI_PAD_CTRL),
+#if !defined(CONFIG_TARGET_MYIMX6LEF)
 	MX6_PAD_EIM_EB2__GPIO2_IO30		| MUX_PAD_CTRL(NO_PAD_CTRL),
-	MX6_PAD_EIM_D19__GPIO3_IO19		| MUX_PAD_CTRL(NO_PAD_CTRL),
 #endif
+	MX6_PAD_EIM_D19__GPIO3_IO19		| MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static void setup_spi(void)
 {
-#if (defined(CONFIG_MYIMX6CB200) || defined(CONFIG_MYIMX6CB314))
 	imx_iomux_v3_setup_multiple_pads(ecspi1_pads, ARRAY_SIZE(ecspi1_pads));
-#endif
 }
 
 int board_spi_cs_gpio(unsigned bus, unsigned cs)
 {
-#if (defined(CONFIG_MYIMX6CB200) || defined(CONFIG_MYIMX6CB314))
 	int ret = -1;
 	
 	if (bus == 0 && cs == 1)
-		ret = IMX_GPIO_NR(3, 19);	/* SST25VF016B */
+		ret = ECSPI1_CS1;
+#if !defined(CONFIG_TARGET_MYIMX6LEF)
 	else if (bus == 0 && cs == 0)
-		ret = IMX_GPIO_NR(2, 30);
+		ret = ECSPI1_CS0;
+#endif
 	
 	return ret;
-#endif
 }
 
 /* ENET ********************************************************************* */
 static iomux_v3_cfg_t const enet_pads[] = {
-#if defined(CONFIG_TARGET_MYIMX6EK200)
+#if defined(CONFIG_TARGET_MYIMX6EK200)	/* CONFIG_TARGET_MYIMX6EK200 */
 	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_GPIO_16__ENET_REF_CLK		| MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -136,7 +155,8 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	MX6_PAD_ENET_RX_ER__ENET_RX_ER		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_GPIO_18__GPIO7_IO13			| MUX_PAD_CTRL(NO_PAD_CTRL),
 	MX6_PAD_ENET_REF_CLK__GPIO1_IO23 	| MUX_PAD_CTRL(NO_PAD_CTRL),
-#elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
+#elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6EK336) \
+	|| defined(CONFIG_TARGET_MYIMX6ACO) || defined(CONFIG_TARGET_MYIMX6QJH))
 	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_TXC__RGMII_TXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -147,15 +167,26 @@ static iomux_v3_cfg_t const enet_pads[] = {
 	MX6_PAD_RGMII_TX_CTL__RGMII_TX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET_REF_CLK__ENET_TX_CLK	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_RXC__RGMII_RXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
+	MX6_PAD_RGMII_RD0__GPIO6_IO25		| MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_RGMII_RD1__GPIO6_IO27		| MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_RGMII_RD2__GPIO6_IO28		| MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_RGMII_RD3__GPIO6_IO29		| MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_RGMII_RX_CTL__GPIO6_IO24	| MUX_PAD_CTRL(NO_PAD_CTRL),
+	/* KSZ9031 Reset */
+	MX6_PAD_ENET_CRS_DV__GPIO1_IO25		| MUX_PAD_CTRL(NO_PAD_CTRL),
+#endif	/* End: CONFIG_TARGET_MYIMX6EK200 */
+};
+
+#if (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6EK336) \
+	|| defined(CONFIG_TARGET_MYIMX6ACO) || defined(CONFIG_TARGET_MYIMX6QJH))
+static iomux_v3_cfg_t const enet_pads2[] = {
 	MX6_PAD_RGMII_RD0__RGMII_RD0	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_RD1__RGMII_RD1	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_RD2__RGMII_RD2	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_RD3__RGMII_RD3	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_RX_CTL__RGMII_RX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	/* KSZ9031 Reset */
-	MX6_PAD_ENET_CRS_DV__GPIO1_IO25		| MUX_PAD_CTRL(NO_PAD_CTRL),
-#endif
 };
+#endif
 
 static void setup_iomux_enet(void)
 {
@@ -166,14 +197,29 @@ static void setup_iomux_enet(void)
 	udelay(500);
 	gpio_set_value(IMX_GPIO_NR(1, 23), 1);
 	imx_iomux_set_gpr_register(1, 21, 1, 1);
-#elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
+#elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6EK336) \
+	|| defined(CONFIG_TARGET_MYIMX6ACO) || defined(CONFIG_TARGET_MYIMX6QJH))
 	gpio_direction_output(IMX_GPIO_NR(1, 25) , 0);
-	udelay(500);
+	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 25), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 27), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 28), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 29), 1);
+	udelay(1000);
 	gpio_set_value(IMX_GPIO_NR(1, 25), 1);
+	
+	udelay(1000 * 100);
+	gpio_free(IMX_GPIO_NR(6, 24));
+	gpio_free(IMX_GPIO_NR(6, 25));
+	gpio_free(IMX_GPIO_NR(6, 27));
+	gpio_free(IMX_GPIO_NR(6, 28));
+	gpio_free(IMX_GPIO_NR(6, 29));
+
+	imx_iomux_v3_setup_multiple_pads(enet_pads2, ARRAY_SIZE(enet_pads2));
 #endif
 }
 
-#if (CONFIG_FEC_XCV_TYPE == RGMII)
+#if (CONFIG_FEC_XCV_TYPE == RGMII)	/* CONFIG_FEC_XCV_TYPE */
 int mx6_rgmii_rework(struct phy_device *phydev)
 {
 	phy_write(phydev, MDIO_DEVAD_NONE, MII_CTRL1000, 0x1c00);
@@ -195,7 +241,7 @@ int mx6_rgmii_rework(struct phy_device *phydev)
 
 	return 0;
 }
-#endif
+#endif	/* End: CONFIG_FEC_XCV_TYPE */
 
 int board_phy_config(struct phy_device *phydev)
 {
@@ -209,9 +255,8 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
-static void setup_pcie(void);
-
-#if (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
+#if (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6EK336) \
+	|| defined(CONFIG_TARGET_MYIMX6ACO) || defined(CONFIG_TARGET_MYIMX6QJH))
 int board_eth_init(bd_t *bis)
 {
 	uint32_t base = IMX_FEC_BASE;
@@ -241,7 +286,6 @@ int board_eth_init(bd_t *bis)
 		free(bus);
 	}
 #endif
-	setup_pcie();
 
 	return 0;
 }
@@ -262,16 +306,18 @@ int board_eth_init(bd_t *bis)
 	if (ret)
 		return ret;
 
-	setup_pcie();
-
 	return cpu_eth_init(bis);
 }
 #endif
 
 /* DISPLAY ****************************************************************** */
+#if !defined(CONFIG_TARGET_MYIMX6QJH)
+#define DISP0_PWM	IMX_GPIO_NR(1, 21)
+#if defined(CONFIG_TARGET_MYIMX6LEF)
+#define DISP0_RST	IMX_GPIO_NR(4, 20)
+#endif
+
 static iomux_v3_cfg_t const rgb_pads[] = {
-#if (defined(CONFIG_TARGET_MYIMX6EK200) \
-	|| defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
 	MX6_PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK | MUX_PAD_CTRL(NO_PAD_CTRL),
 	MX6_PAD_DI0_PIN15__IPU1_DI0_PIN15 | MUX_PAD_CTRL(NO_PAD_CTRL),
 	MX6_PAD_DI0_PIN2__IPU1_DI0_PIN02 | MUX_PAD_CTRL(NO_PAD_CTRL),
@@ -300,33 +346,31 @@ static iomux_v3_cfg_t const rgb_pads[] = {
 	MX6_PAD_DISP0_DAT21__IPU1_DISP0_DATA21 | MUX_PAD_CTRL(NO_PAD_CTRL),
 	MX6_PAD_DISP0_DAT22__IPU1_DISP0_DATA22 | MUX_PAD_CTRL(NO_PAD_CTRL),
 	MX6_PAD_DISP0_DAT23__IPU1_DISP0_DATA23 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#if (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
-	MX6_PAD_DI0_PIN4__GPIO4_IO20 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#elif defined(CONFIG_TARGET_MYIMX6EK200)
 	MX6_PAD_SD1_DAT3__GPIO1_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#endif
+#if defined(CONFIG_TARGET_MYIMX6LEF)
+	/* Reset */
+	MX6_PAD_DI0_PIN4__GPIO4_IO20 | MUX_PAD_CTRL(NO_PAD_CTRL),
 #endif
 };
 
 iomux_v3_cfg_t const di0_pads[] = {
-#if (defined(CONFIG_TARGET_MYIMX6EK200) \
-	|| defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
 	MX6_PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK,	/* DISP0_CLK */
 	MX6_PAD_DI0_PIN2__IPU1_DI0_PIN02,		/* DISP0_HSYNC */
 	MX6_PAD_DI0_PIN3__IPU1_DI0_PIN03,		/* DISP0_VSYNC */
-#endif
 };
 
 static void enable_rgb(struct display_info_t const *dev)
 {
-#if (defined(CONFIG_TARGET_MYIMX6EK200) \
-	|| defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
 	imx_iomux_v3_setup_multiple_pads(rgb_pads, ARRAY_SIZE(rgb_pads));
-	gpio_direction_output(DISP0_PWR_EN, 1);
+#if defined(CONFIG_TARGET_MYIMX6LEF)
+	gpio_direction_output(DISP0_RST, 1);
 #endif
+	gpio_direction_output(DISP0_PWM, 1);
 }
+#endif		/* CONFIG_TARGET_MYIMX6QJH */
 
 #if defined(CONFIG_VIDEO_IPUV3)
+#if !defined(CONFIG_TARGET_MYIMX6QJH)
 static void disable_lvds(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
@@ -338,13 +382,17 @@ static void disable_lvds(struct display_info_t const *dev)
 
 	writel(reg, &iomux->gpr[2]);
 }
+#endif
 
 static void do_enable_hdmi(struct display_info_t const *dev)
 {
+#if !defined(CONFIG_TARGET_MYIMX6QJH)
 	disable_lvds(dev);
+#endif
 	imx_enable_hdmi_phy();
 }
 
+#if !defined(CONFIG_TARGET_MYIMX6QJH)
 static void enable_lvds(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
@@ -354,8 +402,10 @@ static void enable_lvds(struct display_info_t const *dev)
 	       IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT;
 	writel(reg, &iomux->gpr[2]);
 }
+#endif
 
 struct display_info_t const displays[] = {{
+#if !defined(CONFIG_TARGET_MYIMX6QJH)
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
@@ -376,6 +426,7 @@ struct display_info_t const displays[] = {{
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
+#endif
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
@@ -395,6 +446,7 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 2,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
+#if !defined(CONFIG_TARGET_MYIMX6QJH)
 } }, {
 	.bus	= 0,
 	.addr	= 0,
@@ -415,6 +467,7 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 10,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
+#endif
 } } };
 size_t display_count = ARRAY_SIZE(displays);
 
@@ -424,8 +477,10 @@ static void setup_display(void)
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	int reg;
 
+#if !defined(CONFIG_TARGET_MYIMX6QJH)
 	/* Setup HSYNC, VSYNC, DISP_CLK for debugging purposes */
 	imx_iomux_v3_setup_multiple_pads(di0_pads, ARRAY_SIZE(di0_pads));
+#endif
 
 	enable_ipu_clock();
 	imx_setup_hdmi();
@@ -514,21 +569,29 @@ int board_ehci_power(int port, int on)
 }
 
 /* uSDHC ******************************************************************** */
+#if defined(CONFIG_TARGET_MYIMX6LEF) || defined(CONFIG_TARGET_MYIMX6QJH)
+#define USDHC3_CD_GPIO	IMX_GPIO_NR(7, 1)
+#define USDHC3_RST_GPIO	IMX_GPIO_NR(7, 8)
+#else
+#define USDHC3_CD_GPIO	IMX_GPIO_NR(4, 10)
+#endif
+
 static iomux_v3_cfg_t const usdhc3_pads[] = {
-#if (defined(CONFIG_TARGET_MYIMX6EK200) \
-	|| defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
 	MX6_PAD_SD3_CLK__SD3_CLK		| MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_CMD__SD3_CMD		| MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT0__SD3_DATA0		| MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT1__SD3_DATA1		| MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT2__SD3_DATA2		| MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT3__SD3_DATA3		| MUX_PAD_CTRL(USDHC_PAD_CTRL),
+#if (defined(CONFIG_TARGET_MYIMX6LEF) || defined(CONFIG_TARGET_MYIMX6QJH))
+	MX6_PAD_SD3_DAT4__GPIO7_IO01	| MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_SD3_RST__GPIO7_IO08	| MUX_PAD_CTRL(NO_PAD_CTRL),
+#else
 	MX6_PAD_KEY_COL2__GPIO4_IO10    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
 #endif
 };
 
 static iomux_v3_cfg_t const usdhc4_pads[] = {
-#if (defined(CONFIG_MYIMX6CB200) || defined(CONFIG_MYIMX6CB314))
 	MX6_PAD_SD4_CLK__SD4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_CMD__SD4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT0__SD4_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -539,11 +602,8 @@ static iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_DAT5__SD4_DATA5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT6__SD4_DATA6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT7__SD4_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-#endif
 };
 
-#if (defined(CONFIG_TARGET_MYIMX6EK200) \
-	|| defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
 struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC3_BASE_ADDR},
 	{USDHC4_BASE_ADDR},
@@ -608,14 +668,15 @@ int board_mmc_init(bd_t *bis)
 
 	return 0;
 }
-#endif
 
 /* PCI-E ******************************************************************** */
+#if !(defined(CONFIG_TARGET_MYIMX6LEF) || defined(CONFIG_TARGET_MYIMX6QJH))
 iomux_v3_cfg_t const pcie_pads[] = {
 	MX6_PAD_NANDF_ALE__GPIO6_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* POWER */
 #if defined(CONFIG_TARGET_MYIMX6EK200)
 	MX6_PAD_NANDF_CLE__GPIO6_IO07 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* RESET */
-#elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6ACO))
+#elif (defined(CONFIG_TARGET_MYIMX6EK314) || defined(CONFIG_TARGET_MYIMX6EK336) \
+	|| defined(CONFIG_TARGET_MYIMX6ACO))
 	MX6_PAD_NANDF_CS1__GPIO6_IO14 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* RESET */
 #endif
 };
@@ -624,10 +685,12 @@ static void setup_pcie(void)
 {
 	imx_iomux_v3_setup_multiple_pads(pcie_pads, ARRAY_SIZE(pcie_pads));
 }
+#endif	/* CONFIG_TARGET_MYIMX6LEF, CONFIG_TARGET_MYIMX6QJH */
 
 /* I2C ********************************************************************** */
 static struct i2c_pads_info i2c_pad_info1 = {
-#if (defined(CONFIG_MYIMX6CB200) || defined(CONFIG_MYIMX6CB314))
+#if (defined(CONFIG_MYIMX6CB200) || defined(CONFIG_MYIMX6CB314) \
+	|| defined(CONFIG_MYIMX6CB336))
 	.scl = {
 		.i2c_mode = MX6_PAD_KEY_COL3__I2C2_SCL | I2C_PAD,
 		.gpio_mode = MX6_PAD_KEY_COL3__GPIO4_IO12 | I2C_PAD,
@@ -666,10 +729,14 @@ int checkboard(void)
 	puts("MY-IMX6-EK200");
 #elif defined(CONFIG_TARGET_MYIMX6EK314)
 	puts("MY-IMX6-EK314");
-#elif defined(CONFIG_TARGET_MYIMX6EKPOB)
-	puts("MY-IMX6-EKPOB");
+#elif defined(CONFIG_TARGET_MYIMX6EK336)
+	puts("MY-IMX6-EK336");
 #elif defined(CONFIG_TARGET_MYIMX6ACO)
 	puts("MY-IMX6-ACO");
+#elif defined(CONFIG_TARGET_MYIMX6LEF)
+	puts("MY-IMX6-LEF");
+#elif defined(CONFIG_TARGET_MYIMX6QJH)
+	puts("MY-IMX6-QJH");
 #endif
 
 #if defined(CONFIG_MX6QP)
@@ -710,15 +777,49 @@ int board_early_init_f(void)
 	return 0;
 }
 
+#if defined(CONFIG_MYIMX6CB336)
+#define PMIC_I2C_BUS	1
+#define PMIC_I2C_ADDR	0x36
+#define PMIC_REG_REPCNT	0xf
+
+int pmic_init(void)
+{
+	unsigned char buf = 0;
+
+	I2C_SET_BUS(PMIC_I2C_BUS);
+
+	if (i2c_read(PMIC_I2C_ADDR, PMIC_REG_REPCNT, 1, &buf, 1))
+		return -1;
+	
+	buf |= 1;
+	if (i2c_write(PMIC_I2C_ADDR, PMIC_REG_REPCNT, 1, &buf, 1))
+		return -1;
+
+	return 0;
+}
+#endif
+
 int board_init(void)
 {
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+	
+#if defined(CONFIG_MYIMX6CB336)
+	pmu_init();
+#endif
 
 	setup_spi();
 
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+	
+#if defined(CONFIG_MYIMX6CB336)
+	pmic_init();
+#endif
 
 	setup_usb();
+	
+#if !(defined(CONFIG_TARGET_MYIMX6LEF) || defined(CONFIG_TARGET_MYIMX6QJH))
+	setup_pcie();
+#endif
 
 	return 0;
 }

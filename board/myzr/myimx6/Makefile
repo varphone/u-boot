@@ -6,8 +6,10 @@
 
 obj-$(CONFIG_TARGET_MYIMX6EK200)	:= myimx6qdls.o
 obj-$(CONFIG_TARGET_MYIMX6EK314)	:= myimx6qdls.o
-obj-$(CONFIG_TARGET_MYIMX6EKPOB)	:= myimx6qdls.o
+obj-$(CONFIG_TARGET_MYIMX6EK336)	:= myimx6qdls.o
 obj-$(CONFIG_TARGET_MYIMX6ACO)		:= myimx6qdls.o
+obj-$(CONFIG_TARGET_MYIMX6LEF)		:= myimx6qdls.o
+obj-$(CONFIG_TARGET_MYIMX6QJH)		:= myimx6qdls.o
 obj-$(CONFIG_TARGET_MYIMX6EK140)	:= myimx6ul.o
 
 extra-$(CONFIG_USE_PLUGIN) :=  plugin.bin
