@@ -404,7 +404,7 @@ static void enable_lvds(struct display_info_t const *dev)
 }
 #endif
 
-#define MTY065_I2C_BUS	2
+#define MTY065_I2C_BUS	0
 #define MTY065_I2C_ADDR	0x1b
 static void enable_mty065(struct display_info_t const* dev)
 {
