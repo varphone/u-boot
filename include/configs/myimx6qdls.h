@@ -366,6 +366,11 @@
 #define CONFIG_SYS_LOAD_ADDR			CONFIG_LOADADDR
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
+#if defined(CONFIG_MFG)
+#undef CONFIG_ENV_IS_IN_SPI_FLASH
+#define CONFIG_ENV_IS_NOWHERE
+#endif
+
 #define CONFIG_MFG_ENV_SETTINGS \
 	"mfgtool_args=setenv bootargs console=" CONFIG_CONSOLE_DEV ",115200 " \
 	    CONFIG_BOOTARGS_CMA_SIZE \
