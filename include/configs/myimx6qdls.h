@@ -382,7 +382,7 @@
 		"\0" \
 		"initrd_addr=0x12C00000\0" \
 		"initrd_high=0xffffffff\0" \
-		"bootcmd_mfg=run mfgtool_args; bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
+		"bootcmd_mfg=run mfgtool_args; bootm 0x10800000 0x10c00000;\0" \
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
