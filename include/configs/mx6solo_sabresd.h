@@ -130,7 +130,7 @@
 			"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0"\
 		"bootcmd_net=run bootargs_base bootargs_nfs; "		\
 			"tftpboot ${loadaddr} ${kernel}; bootm\0"	\
-		"bootargs_mmc=setenv bootargs ${bootargs} ip=dhcp "     \
+		"bootargs_mmc=setenv bootargs ${bootargs} "     \
 			"root=/dev/mmcblk0p1 rootwait rw video=mxcfb0:dev=lcd,G065V-VGA,if=RGB24 fb0base=0x27b00000 fbmem=28M\0"                \
 		"bootcmd_mmc=run bootargs_base bootargs_mmc; "   \
 		"mmc dev 2; "	\
