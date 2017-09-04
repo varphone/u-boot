@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 Freescale Semiconductor, Inc.
+ * Copyright (C) 2010-2012 Freescale Semiconductor, Inc.
  *
  * Configuration settings for the MX6DL HDMI Dongle Freescale board.
  *
@@ -41,7 +41,7 @@
 /*  For system.img growing up more than 256MB, more buffer needs
 *   to receive the system.img*/
 #define CONFIG_FASTBOOT_TRANSFER_BUF	0x2c000000
-#define CONFIG_FASTBOOT_TRANSFER_BUF_SIZE 0x20000000 /* 512M byte */
+#define CONFIG_FASTBOOT_TRANSFER_BUF_SIZE 0x14000000 /* 320M byte */
 
 #define CONFIG_CMD_BOOTI
 #define CONFIG_ANDROID_RECOVERY
@@ -59,7 +59,7 @@
 	"booti mmc2 recovery"
 #define CONFIG_ANDROID_RECOVERY_CMD_FILE "/recovery/command"
 #define CONFIG_ANDROID_RECOVERY_BOOTCMD_NAND \
-	"nand read 0x12800000 0x2800000 0x800000;booti 0x12800000"
+	"nand read 0x12800000 0x2800000 0x500000;booti 0x12800000"
 #define CONFIG_ANDROID_RECOVERY_BOOTARGS_NAND NULL
 
 #define CONFIG_INITRD_TAG
@@ -77,6 +77,6 @@
 		"netdev=eth0\0"						\
 		"ethprime=FEC0\0"					\
 		"fastboot_dev=mmc2\0"					\
-		"bootcmd=nand read 0x12800000 0x1400000 0x800000;booti 0x12800000\0"
+		"bootcmd=nand read 0x12800000 0x1400000 0x500000;booti 0x12800000\0"
 
 #endif

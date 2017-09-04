@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) 2013-2014 Freescale Semiconductor, Inc.
+ * Copyright (C) 2013 Freescale Semiconductor, Inc.
  *
  * Configuration settings for the MX6Q Sabre auto Freescale board.
  *
@@ -44,7 +44,7 @@
 /*  For system.img growing up more than 256MB, more buffer needs
 *   to receive the system.img*/
 #define CONFIG_FASTBOOT_TRANSFER_BUF	0x2c000000
-#define CONFIG_FASTBOOT_TRANSFER_BUF_SIZE 0x20000000 /* 512M byte */
+#define CONFIG_FASTBOOT_TRANSFER_BUF_SIZE 0x14000000 /* 320M byte */
 
 
 #define CONFIG_CMD_BOOTI
@@ -62,7 +62,7 @@
 	"booti mmc2 recovery"
 #define CONFIG_ANDROID_RECOVERY_CMD_FILE "/recovery/command"
 #define CONFIG_ANDROID_RECOVERY_BOOTCMD_NAND \
-	"nand read 0x12800000 0x2000000 0x800000;booti 0x12800000"
+	"nand read 0x12800000 0x2000000 0x600000;booti 0x12800000"
 #define CONFIG_ANDROID_RECOVERY_BOOTARGS_NAND NULL
 #define CONFIG_INITRD_TAG
 
@@ -77,5 +77,5 @@
 		"ethprime=FEC0\0"					\
 		"fastboot_dev=mmc2\0"					\
 		"fbparts=16m@16m(boot) 128m@32m(recovery) 810m@160m(android_root)\0" \
-		"bootcmd=nand read 0x12800000 0x1000000 0x800000;booti 0x12800000\0"
+		"bootcmd=nand read 0x12800000 0x1000000 0x500000;booti 0x12800000\0"
 #endif

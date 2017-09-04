@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 Freescale Semiconductor, Inc.
+ * Copyright (C) 2008-2011 Freescale Semiconductor, Inc.
  * Terry Lv
  *
  * Copyright 2008, Freescale Semiconductor, Inc
@@ -586,6 +586,7 @@ static int mmc_send_op_cond(struct mmc *mmc)
 		udelay(1000);
 	} while (!(cmd.response[0] & OCR_BUSY) && timeout--);
 
+//	printf("timeout = %d\n",  timeout);
 	if (timeout <= 0)
 		return UNUSABLE_ERR;
 
@@ -1085,8 +1086,7 @@ int sd_send_tuning_cmd(struct mmc *mmc)
 
 void sd_uhsi_tuning(struct mmc *mmc)
 {
-	int min, max_len, avg, len, temp;
-	int ret;
+	int min, max, avg;
 
 	/* Tuning only required for SDR50 and SDR104 modes */
 	if (mmc->card_uhs_mode != SD_UHSI_FUNC_SDR50 &&
@@ -1094,36 +1094,30 @@ void sd_uhsi_tuning(struct mmc *mmc)
 		return;
 
 	/* Start with lowest value, increase it until CMD19 succeeds */
-	len = 0;
-	max_len = 0;
-	temp = mmc->tuning_min;
-	while (temp < mmc->tuning_max) {
-		mmc->set_tuning(mmc, temp);
-		if (!sd_send_tuning_cmd(mmc)) {
-			len++;
-		} else {
+	min = mmc->tuning_min;
+	while (min < mmc->tuning_max) {
+		mmc->set_tuning(mmc, min);
+		if (!sd_send_tuning_cmd(mmc))
+			break;
+		min += mmc->tuning_step;
+	}
 
-			/* Searching the max window where CMD 19 succeeds for every value */
-			if (len > max_len) {
-				min = temp - len;
-				max_len = len;
-			}
-
-			len = 0;
-		}
-		temp += mmc->tuning_step;
+	/* Start with last successful value, increase it until CMD19 fails */
+	max = min;
+	while (max < mmc->tuning_max) {
+		mmc->set_tuning(mmc, max);
+		if (sd_send_tuning_cmd(mmc))
+			break;
+		max += mmc->tuning_step;
 	}
 
 	/* Set tuning value to average of
 	 * [lowest successful val, highest successful val]
 	 */
-	avg = min + (max_len / 2);
+	avg = (min + max) / 2;
 	mmc->set_tuning(mmc, avg);
-	ret = sd_send_tuning_cmd(mmc);
-	ret |= sd_send_tuning_cmd(mmc);
-
-	if (ret)
-		printf("SD UHS-I tuning failed\n");
+	sd_send_tuning_cmd(mmc);
+	sd_send_tuning_cmd(mmc);
 }
 
 /* frequency bases */
@@ -1542,6 +1536,8 @@ int mmc_register(struct mmc *mmc)
 
 	INIT_LIST_HEAD (&mmc->link);
 
+	printf("add mmc %d\n", mmc->block_dev.dev);
+
 	list_add_tail (&mmc->link, &mmc_devices);
 
 	return 0;
@@ -1560,6 +1556,7 @@ int mmc_init(struct mmc *mmc)
 {
 	int err;
 
+//	printf("mmc init\n");
 	if (mmc->has_init)
 		return 0;
 
@@ -1567,8 +1564,10 @@ int mmc_init(struct mmc *mmc)
 
 	err = mmc->init(mmc);
 
-	if (err)
+	if (err) {
+//		printf("mmc init fail!\n");
 		return err;
+	}
 
 	mmc_set_bus_width(mmc, 1);
 	mmc_set_clock(mmc, 1);
@@ -1576,8 +1575,10 @@ int mmc_init(struct mmc *mmc)
 	/* Reset the Card */
 	err = mmc_go_idle(mmc);
 
-	if (err)
+	if (err) {
+		printf("mmc go idle!\n");
 		return err;
+	}
 
 	/* The internal partition reset to user partition(0) at every CMD0*/
 	mmc->part_num = 0;
@@ -1590,6 +1591,7 @@ int mmc_init(struct mmc *mmc)
 
 	/* If the command timed out, we check for an MMC card */
 	if (err == TIMEOUT) {
+//		printf("sd_send_op_cond\n");
 		err = mmc_send_op_cond(mmc);
 
 		if (err) {
@@ -1599,10 +1601,13 @@ int mmc_init(struct mmc *mmc)
 	}
 
 	err = mmc_startup(mmc);
-	if (err)
+	if (err) {
+//		printf("mmc start fail!\n");
 		mmc->has_init = 0;
-	else
+	}
+	else {
 		mmc->has_init = 1;
+	}
 	return err;
 }
 

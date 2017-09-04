@@ -28,6 +28,7 @@ include $(TOPDIR)/config.mk
 LIB	= $(obj)lib$(SOC).a
 
 COBJS	= interrupts.o generic.o iomux-v3.o timer.o
+COBJS-$(CONFIG_UBOOT_LOGO_ENABLE) += ipu.o
 COBJS += $(COBJS-y)
 
 SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)

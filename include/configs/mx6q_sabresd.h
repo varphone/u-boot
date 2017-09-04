@@ -108,31 +108,38 @@
 
 #define CONFIG_CMD_IMX_DOWNLOAD_MODE
 
-#define CONFIG_BOOTDELAY 3
+//edit by xym
+#define CONFIG_BOOTDELAY 1
+//edit by xym
 
 #define CONFIG_PRIME	"FEC0"
 
 #define CONFIG_LOADADDR		0x10800000	/* loadaddr env var */
 #define CONFIG_RD_LOADADDR	(0x1300000)
 
+//edit by xym
 #define	CONFIG_EXTRA_ENV_SETTINGS					\
 		"netdev=eth0\0"						\
 		"ethprime=FEC0\0"					\
 		"uboot=u-boot.bin\0"			\
 		"kernel=uImage\0"				\
-		"nfsroot=/opt/eldk/arm\0"				\
+		"nfsroot=/home/myzr/nfsroot\0"				\
 		"bootargs_base=setenv bootargs console=ttymxc0,115200\0"\
 		"bootargs_nfs=setenv bootargs ${bootargs} root=/dev/nfs "\
 			"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0"\
 		"bootcmd_net=run bootargs_base bootargs_nfs; "		\
 			"tftpboot ${loadaddr} ${kernel}; bootm\0"	\
 		"bootargs_mmc=setenv bootargs ${bootargs} ip=dhcp "     \
-			"root=/dev/mmcblk0p1 rootwait\0"                \
+			"root=/dev/mmcblk0p1 rootwait rw video=mxcfb0:dev=lcd,CLAA-WVGA,if=RGB24 fb0base=0x27b00000 fbmem=28M\0"                \
 		"bootcmd_mmc=run bootargs_base bootargs_mmc; "   \
-		"mmc dev 3; "	\
+		"mmc dev 2; "	\
 		"mmc read ${loadaddr} 0x800 0x2000; bootm\0"	\
-		"bootcmd=run bootcmd_net\0"                             \
-
+		"bootcmd=run bootcmd_mmc\0"                            \
+		"update_uboot=tftpboot ${loadaddr} u-boot.bin; sf probe 1; sf erase 0 0x80000; sf write ${loadaddr} 0 0x80000\0"	  \
+		"splashimage=0x30000000\0"	\
+		"splashpos=m,m\0"	\
+		"lvds_num=1\0"
+//edit by xym
 
 #define CONFIG_ARP_TIMEOUT	200UL
 
@@ -144,8 +151,8 @@
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		1024	/* Console I/O Buffer Size */
 /* Print Buffer Size */
-#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
-#define CONFIG_SYS_MAXARGS	16	/* max number of command args */
+#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 128)
+#define CONFIG_SYS_MAXARGS	128	/* max number of command args */
 #define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE /* Boot Argument Buffer Size */
 
 #define CONFIG_SYS_MEMTEST_START	0x10000000	/* memtest works on */
@@ -158,7 +165,12 @@
 #define CONFIG_SYS_HZ			1000
 
 #define CONFIG_CMDLINE_EDITING
+#define CONFIG_SYS_HUSH_PARSER		1 /* Use the HUSH parser */
+#ifdef	CONFIG_SYS_HUSH_PARSER
+#define	CONFIG_SYS_PROMPT_HUSH_PS2	"> "
+#endif
 
+#define CONFIG_ENET_RMII
 #define CONFIG_FEC0_IOBASE	ENET_BASE_ADDR
 #define CONFIG_FEC0_PINMUX	-1
 #define CONFIG_FEC0_MIIBASE	-1
@@ -171,9 +183,9 @@
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_PING
-#define CONFIG_IPADDR			192.168.1.103
-#define CONFIG_SERVERIP			192.168.1.101
-#define CONFIG_NETMASK			255.255.255.0
+#define CONFIG_IPADDR			192.168.2.103
+#define CONFIG_SERVERIP			192.168.2.105
+//#define CONFIG_NETMASK			255.255.255.0
 
 /*
  * OCOTP Configs
@@ -191,7 +203,7 @@
 #ifdef CONFIG_CMD_I2C
 	#define CONFIG_HARD_I2C         1
 	#define CONFIG_I2C_MXC          1
-	#define CONFIG_SYS_I2C_PORT             I2C2_BASE_ADDR
+	#define CONFIG_SYS_I2C_PORT             I2C3_BASE_ADDR
 	#define CONFIG_SYS_I2C_SPEED            100000
 	#define CONFIG_SYS_I2C_SLAVE            0x8
 #endif
@@ -201,8 +213,9 @@
  */
 #ifdef CONFIG_CMD_SF
 	#define CONFIG_FSL_SF		1
-	#define CONFIG_SPI_FLASH_IMX_M25PXX	1
-	#define CONFIG_SPI_FLASH_CS	0
+//	#define CONFIG_SPI_FLASH_IMX_M25PXX	1
+	#define CONFIG_SPI_FLASH_IMX_SST	1
+	#define CONFIG_SPI_FLASH_CS	1
 	#define CONFIG_IMX_ECSPI
 	#define IMX_CSPI_VER_2_3	1
 	#define MAX_SPI_BYTES		(64 * 4)
@@ -222,7 +235,7 @@
 	#define CONFIG_MMC
 	#define CONFIG_GENERIC_MMC
 	#define CONFIG_IMX_MMC
-	#define CONFIG_SYS_FSL_USDHC_NUM        4
+	#define CONFIG_SYS_FSL_USDHC_NUM        3
 	#define CONFIG_SYS_FSL_ESDHC_ADDR       0
 	#define CONFIG_SYS_MMC_ENV_DEV  2
 	#define CONFIG_DOS_PARTITION	1
@@ -258,7 +271,7 @@
  * GPMI Nand Configs
  */
 /* #define CONFIG_CMD_NAND */
-
+//#define CONFIG_CMD_NAND
 #ifdef CONFIG_CMD_NAND
 	#define CONFIG_NAND_GPMI
 	#define CONFIG_GPMI_NFC_SWAP_BLOCK_MARK
@@ -299,7 +312,9 @@
 #define CONFIG_SYS_NO_FLASH
 
 /* Monitor at beginning of flash */
-#define CONFIG_FSL_ENV_IN_MMC
+//#define CONFIG_FSL_ENV_IN_MMC
+#define CONFIG_FSL_ENV_IN_SF
+//#define CONFIG_FSL_ENV_IN_NAND
 /* #define CONFIG_FSL_ENV_IN_NAND */
 /* #define CONFIG_FSL_ENV_IN_SATA */
 
@@ -324,7 +339,7 @@
 	#define CONFIG_ENV_IS_NOWHERE	1
 #endif
 
-#define CONFIG_SPLASH_SCREEN
+//#define CONFIG_SPLASH_SCREEN
 #ifdef CONFIG_SPLASH_SCREEN
 	/*
 	 * Framebuffer and LCD
@@ -347,4 +362,152 @@
 	#define IMX_PWM1_BASE    PWM1_BASE_ADDR
 	#define IMX_PWM2_BASE    PWM2_BASE_ADDR
 #endif
+
+//add by xym
+#ifndef CONFIG_SPLASH_SCREEN
+#define CONFIG_UBOOT_LOGO_ENABLE
+
+#ifdef CONFIG_UBOOT_LOGO_ENABLE
+	// Select one of the output mode
+//	#define IPU_OUTPUT_MODE_HDMI
+//	#define IPU_OUTPUT_MODE_LVDS
+	#define IPU_OUTPUT_MODE_LCD
+
+	#define CONFIG_FB_BASE	(TEXT_BASE + 0x300000)
+	#define UBOOT_LOGO_BMP_ADDR 0x00600000
+
+	#define BMP_HEAD_SIZE	 54   //bytes
+
+	#define CONFIG_IMX_PWM
+	#define IMX_PWM1_BASE	 PWM1_BASE_ADDR
+	#define IMX_PWM2_BASE	 PWM2_BASE_ADDR
+
+#ifdef IPU_OUTPUT_MODE_HDMI
+/*
+	// For HDMI, 1280*720 resolution
+	#define DISPLAY_WIDTH	1280
+	#define DISPLAY_HEIGHT	720
+	#define DISPLAY_BPP		32
+	#define DISPLAY_IF_BPP	24  // RGB24 interface
+
+	#define DISPLAY_HSYNC_START	220
+	#define DISPLAY_HSYNC_END		110
+	#define DISPLAY_HSYNC_WIDTH	40
+
+	#define DISPLAY_VSYNC_START	20
+	#define DISPLAY_VSYNC_END		5
+	#define DISPLAY_VSYNC_WIDTH	5
+
+	#define DISPLAY_PIX_CLOCK	74250000  //(DISPLAY_HSYNC_START + DISPLAY_HSYNC_END + DISPLAY_HSYNC_WIDTH + DISPLAY_WIDTH) * (DISPLAY_VSYNC_START + DISPLAY_VSYNC_END + DISPLAY_VSYNC_WIDTH + DISPLAY_HEIGHT) * refresh rate (60Hz)
+*/
+	// For HDMI, 1920*1080 resolution
+	#define DISPLAY_WIDTH	1920
+	#define DISPLAY_HEIGHT	1080
+	#define DISPLAY_BPP		32
+	#define DISPLAY_IF_BPP	24  // RGB24 interface
+
+	#define DISPLAY_HSYNC_START	148
+	#define DISPLAY_HSYNC_END		88
+	#define DISPLAY_HSYNC_WIDTH	44
+
+	#define DISPLAY_VSYNC_START	36
+	#define DISPLAY_VSYNC_END		4
+	#define DISPLAY_VSYNC_WIDTH	5
+
+	#define DISPLAY_PIX_CLOCK	148500000  //(DISPLAY_HSYNC_START + DISPLAY_HSYNC_END + DISPLAY_HSYNC_WIDTH + DISPLAY_WIDTH) * (DISPLAY_VSYNC_START + DISPLAY_VSYNC_END + DISPLAY_VSYNC_WIDTH + DISPLAY_HEIGHT) * refresh rate (60Hz)
+
+	#define DISPLAY_VSYNC_POLARITY			1
+	#define DISPLAY_HSYNC_POLARITY			1
+	#define DISPLAY_CLOCK_POLARITY			0
+	#define DISPLAY_DATA_POLARITY				0
+	#define DISPLAY_DATA_ENABLE_POLARITY		1
+
+	#define IPU_NUM			2  // 1 for IPU1, 2 for IPU2.
+	#define DI_NUM			0  // 0 for DI0, 1 for DI1.
+	#define DI_CLOCK_EXTERNAL_MODE  //When clock external mode was defined, the DI clock root will be PLL5, 
+								//without this macro, the DI root clock is IPU internal clock.
+	#define CONFIG_IMX_HDMI
+#endif
+
+#ifdef IPU_OUTPUT_MODE_LVDS
+	// For LVDS, 1024*768 resolution
+	#define DISPLAY_WIDTH	1024
+	#define DISPLAY_HEIGHT	768
+	#define DISPLAY_BPP		24
+	#define DISPLAY_IF_BPP	18  // RGB666 interface
+
+	#define DISPLAY_HSYNC_START	220
+	#define DISPLAY_HSYNC_END		40
+	#define DISPLAY_HSYNC_WIDTH	60
+
+	#define DISPLAY_VSYNC_START	21
+	#define DISPLAY_VSYNC_END		7
+	#define DISPLAY_VSYNC_WIDTH	10
+
+	#define DISPLAY_PIX_CLOCK	64000000  //(DISPLAY_HSYNC_START + DISPLAY_HSYNC_END + DISPLAY_HSYNC_WIDTH + DISPLAY_WIDTH) * (DISPLAY_VSYNC_START + DISPLAY_VSYNC_END + DISPLAY_VSYNC_WIDTH + DISPLAY_HEIGHT) * refresh rate (60Hz)
+/*
+	// For LVDS, 1920*1080 resolution, dual channel
+	#define DISPLAY_WIDTH	1920
+	#define DISPLAY_HEIGHT	1080
+	#define DISPLAY_BPP		32
+	#define DISPLAY_IF_BPP	24	// RGB24 interface
+
+	#define DISPLAY_HSYNC_START	100
+	#define DISPLAY_HSYNC_END		40
+	#define DISPLAY_HSYNC_WIDTH	10
+
+	#define DISPLAY_VSYNC_START	20
+	#define DISPLAY_VSYNC_END		3
+	#define DISPLAY_VSYNC_WIDTH	2
+
+	#define DISPLAY_PIX_CLOCK		135000000  //(DISPLAY_HSYNC_START + DISPLAY_HSYNC_END + DISPLAY_HSYNC_WIDTH + DISPLAY_WIDTH) * (DISPLAY_VSYNC_START + DISPLAY_VSYNC_END + DISPLAY_VSYNC_WIDTH + DISPLAY_HEIGHT) * refresh rate (60Hz)
+	#define LVDS_SPLIT_MODE  // For dual channel split mode.
+*/
+	#define DISPLAY_VSYNC_POLARITY			1
+	#define DISPLAY_HSYNC_POLARITY			1
+	#define DISPLAY_CLOCK_POLARITY			1
+	#define DISPLAY_DATA_POLARITY				0
+	#define DISPLAY_DATA_ENABLE_POLARITY		1
+
+	#define IPU_NUM			1  // 1 for IPU1, 2 for IPU2.
+	#define DI_NUM			1  // 0 for DI0, 1 for DI1.
+	#define LVDS_PORT		1  // 0 for LVDS0, 1 for LVDS1.
+	#define DI_CLOCK_EXTERNAL_MODE  //When clock external mode was defined, the DI clock root will be PLL3 PFD1, 
+								//without this macro, the DI root clock is IPU internal clock.
+#endif
+
+#ifdef IPU_OUTPUT_MODE_LCD
+	//For LCD, 800*480 resolution
+	#define DISPLAY_WIDTH	800
+	#define DISPLAY_HEIGHT	480
+	#define DISPLAY_BPP		24
+	#define DISPLAY_IF_BPP	24  // RGB565 interface
+//	#define DISPLAY_IF_BPP	16  // RGB565 interface
+
+	#define DISPLAY_HSYNC_START	40
+	#define DISPLAY_HSYNC_END		60
+	#define DISPLAY_HSYNC_WIDTH	20
+
+	#define DISPLAY_VSYNC_START	10
+	#define DISPLAY_VSYNC_END		10
+	#define DISPLAY_VSYNC_WIDTH	10
+
+	#define DISPLAY_PIX_CLOCK	((DISPLAY_HSYNC_START + DISPLAY_HSYNC_END + DISPLAY_HSYNC_WIDTH + DISPLAY_WIDTH) * (DISPLAY_VSYNC_START + DISPLAY_VSYNC_END + DISPLAY_VSYNC_WIDTH + DISPLAY_HEIGHT) * 60)
+//	#define DISPLAY_PIX_CLOCK	27000000  //(DISPLAY_HSYNC_START + DISPLAY_HSYNC_END + DISPLAY_HSYNC_WIDTH + DISPLAY_WIDTH) * (DISPLAY_VSYNC_START + DISPLAY_VSYNC_END + DISPLAY_VSYNC_WIDTH + DISPLAY_HEIGHT) * refresh rate (60Hz)
+
+	#define DISPLAY_VSYNC_POLARITY			1
+	#define DISPLAY_HSYNC_POLARITY			1
+	#define DISPLAY_CLOCK_POLARITY			1
+	#define DISPLAY_DATA_POLARITY				0
+	#define DISPLAY_DATA_ENABLE_POLARITY		1
+
+	#define IPU_NUM			1  // 1 for IPU1, 2 for IPU2.
+	#define DI_NUM			0  // 0 for DI0, 1 for DI1.
+	#define DI_CLOCK_EXTERNAL_MODE  //When clock external mode was defined, the DI clock root will be PLL5, 
+								//without this macro, the DI root clock is IPU internal clock.
+#endif
+#endif  //CONFIG_UBOOT_LOGO_ENABLE
+#endif  //CONFIG_SPLASH_SCREEN
+//add by xym
+
 #endif				/* __CONFIG_H */
