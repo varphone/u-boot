@@ -131,7 +131,7 @@
 #define EK_NAME					"unknow"
 #endif
 
-#define CONFIG_BOOTDELAY 		3
+#define CONFIG_BOOTDELAY 		1
 #define CONFIG_CMD_IMX_DOWNLOAD_MODE
 #if defined(MYIMX6EK200_CVR_MIL_V1)
 #define BOOTARGS_VIDEO			"video=mxcfb0:dev=lcd,CLAA-WVGA,if=RGB24,bpp=32"
