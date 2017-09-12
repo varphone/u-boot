@@ -3313,6 +3313,8 @@ myimx6ek200_6q_2g_mfg_config \
 myimx6ek200_6u_config \
 myimx6ek200_6u_mfg_config \
 myimx6ek200_6s_config \
+myimx6ek200_6s_cvr_mil_v1_config \
+myimx6ek200_6s_cvr_mil_v1_vga_config \
 myimx6ek200_6s_mfg_config \
 myimx6ek200_6s_1g_config \
 myimx6ek200_6s_1g_mfg_config \

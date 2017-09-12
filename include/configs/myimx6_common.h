@@ -133,7 +133,13 @@
 
 #define CONFIG_BOOTDELAY 		3
 #define CONFIG_CMD_IMX_DOWNLOAD_MODE
+#if defined(MYIMX6EK200_CVR_MIL_V1)
+#define BOOTARGS_VIDEO			"video=mxcfb0:dev=lcd,CLAA-WVGA,if=RGB24,bpp=32"
+#elif defined(MYIMX6EK200_CVR_MIL_V1_VGA)
+#define BOOTARGS_VIDEO			"video=mxcfb0:dev=lcd,G065V-VGA,if=RGB24,bpp=32"
+#else
 #define BOOTARGS_VIDEO			"video=mxcfb0:dev=ldb,LDB-1024X600,if=RGB666"
+#endif
 
 #define	CONFIG_EXTRA_ENV_SETTINGS					\
 		"netdev=eth0\0"						\
@@ -346,7 +352,12 @@
 /*-----------------------------------------------------------------------
  * SPLASH SCREEN Configs
  */
+#if defined(MYIMX6EK200_CVR_MIL_V1) || \
+    defined(MYIMX6EK200_CVR_MIL_V1_VGA)
+#undef CONFIG_SPLASH_SCREEN
+#else
 #define CONFIG_SPLASH_SCREEN
+#endif
 #ifdef CONFIG_SPLASH_SCREEN
 	/* Framebuffer and LCD */
 	#define CONFIG_LCD
