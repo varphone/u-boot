@@ -42,6 +42,7 @@ if [ "$SRCTREE" != "$OBJTREE" ] ; then
 	rm -f asm
 	mkdir asm-$2
 	ln -s asm-$2 asm
+	${SRCTREE}/mkmakefile ${SRCTREE} ${OBJTREE} 4 0
 else
 	cd ./include
 	rm -f asm

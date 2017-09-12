@@ -3261,6 +3261,8 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_MX6SL_ARM2           4091
 #define MACH_TYPE_MX6Q_HDMIDONGLE      4284
 #define MACH_TYPE_MX6SL_EVK            4307
+#define MACH_TYPE_MYIMX6EK200_6Q     7462
+#define MACH_TYPE_MYIMX6EK314_6Q     7463
 
 #ifdef CONFIG_ARCH_EBSA110
 # ifdef machine_arch_type
@@ -42212,6 +42214,30 @@ extern unsigned int __machine_arch_type;
 # define machine_is_mx6sl_evk() (machine_arch_type == MACH_TYPE_MX6SL_EVK)
 #else
 # define machine_is_mx6sl_evk()	(0)
+#endif
+
+#ifdef CONFIG_MACH_MYIMX6EK200_6Q
+# ifdef machine_arch_type
+#  undef machine_arch_type
+#  define machine_arch_type __machine_arch_type
+# else
+#  define machine_arch_type MACH_TYPE_MYIMX6EK200_6Q
+# endif
+# define machine_is_MYIMX6EK200_6Q()  (machine_arch_type == MACH_TYPE_MYIMX6EK200_6Q)
+#else
+# define machine_is_MYIMX6EK200_6Q()  (0)
+#endif
+
+#ifdef CONFIG_MACH_MYIMX6EK314_6Q
+# ifdef machine_arch_type
+#  undef machine_arch_type
+#  define machine_arch_type __machine_arch_type
+# else
+#  define machine_arch_type MACH_TYPE_MYIMX6EK314_6Q
+# endif
+# define machine_is_MYIMX6EK314_6Q()  (machine_arch_type == MACH_TYPE_MYIMX6EK314_6Q)
+#else
+# define machine_is_MYIMX6EK314_6Q()  (0)
 #endif
 
 /*

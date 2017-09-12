@@ -3306,6 +3306,26 @@ mx53_evk_mfg_config             \
 mx53_evk_config      : unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 mx53_evk freescale mx53
 
+myimx6ek200_6q_config \
+myimx6ek200_6q_mfg_config \
+myimx6ek200_6q_2g_config \
+myimx6ek200_6q_2g_mfg_config \
+myimx6ek200_6u_config \
+myimx6ek200_6u_mfg_config \
+myimx6ek200_6s_config \
+myimx6ek200_6s_mfg_config \
+myimx6ek200_6s_1g_config \
+myimx6ek200_6s_1g_mfg_config \
+myimx6ek314_6q_config \
+myimx6ek314_6q_mfg_config \
+myimx6ek314_6q_2g_config \
+myimx6ek314_6q_2g_mfg_config \
+myimx6ek314_6u_config \
+myimx6ek314_6u_mfg_config \
+myimx6ek314_6s_config \
+myimx6ek314_6s_mfg_config : unconfig
+	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 myimx6 myzr mx6
+
 mx6dl_arm2_config		\
 mx6dl_arm2_iram_config		\
 mx6dl_arm2_mfg_config		\
