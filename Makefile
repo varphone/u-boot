@@ -3307,6 +3307,8 @@ mx53_evk_config      : unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 mx53_evk freescale mx53
 
 myimx6ek200_6q_config \
+myimx6ek200_6q_cvr_mil_v1_config \
+myimx6ek200_6q_cvr_mil_v1_vga_config \
 myimx6ek200_6q_mfg_config \
 myimx6ek200_6q_2g_config \
 myimx6ek200_6q_2g_mfg_config \
