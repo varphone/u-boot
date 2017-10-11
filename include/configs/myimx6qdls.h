@@ -360,11 +360,11 @@
 #define CONFIG_BOOTDELAY				1
 
 #define CONFIG_CONSOLE_DEV				"ttymxc0"
-#define CONFIG_MMCROOT					"/dev/mmcblk3p2 rootfstype=squashfs overlayroot=/dev/mmcblk3p5:rw:ext4"  /* SDHC4 */
+#define CONFIG_MMCROOT					"/dev/mmcblk3p6 rootfstype=squashfs rootoverlay=/dev/mmcblk3p8:ext4:rw"  /* SDHC4 */
 #define CONFIG_LOADADDR					0x12000000
 #define CONFIG_SYS_TEXT_BASE			0x17800000
 #define CONFIG_SYS_LOAD_ADDR			CONFIG_LOADADDR
-#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
+#define CONFIG_SYS_MMC_IMG_LOAD_PART	5
 
 #if defined(CONFIG_MFG)
 #undef CONFIG_ENV_IS_IN_SPI_FLASH
