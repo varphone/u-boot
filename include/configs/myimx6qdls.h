@@ -316,6 +316,11 @@
 #define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
 #define CONFIG_TFTPROOT		"cvr-mil-v2/images/"
 #define PR_SPEC			"-cm2"
+#elif defined(CONFIG_PR_CVR_MIL_V2_A)
+#define CONFIG_DISPLAY		""
+#define CONFIG_TFTPROOT		"cvr-mil-v2-a/images/"
+#define PR_SPEC			"-cm2-a"
+
 #elif defined(CONFIG_PR_CVR_MIL_V3)
 #define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
 #define CONFIG_TFTPROOT		"cvr-mil-v3/images/"
