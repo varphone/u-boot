@@ -580,6 +580,27 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 5,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= -1,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= NULL,
+	.enable	= do_enable_hdmi,
+	.mode	= {
+		.name           = "HDMI-S720P",
+		.refresh        = 60,
+		.xres           = 1920,
+		.yres           = 720,
+		.pixclock       = 39721,
+		.left_margin    = 48,
+		.right_margin   = 16,
+		.upper_margin   = 33,
+		.lower_margin   = 10,
+		.hsync_len      = 96,
+		.vsync_len      = 2,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+
 } } };
 size_t display_count = ARRAY_SIZE(displays);
 
