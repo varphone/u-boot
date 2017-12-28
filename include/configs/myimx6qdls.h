@@ -394,6 +394,7 @@
 	"bootscript=echo Running bootscript from mmc ...; source\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"display=" CONFIG_DISPLAY "\0" \
+	"extra=cma=320M dmfc=3\0" \
 	"fdt_file="CONFIG_BOARD_NAME"-"EK_SPEC PR_SPEC".dtb\0" \
 	"fdt_addr=0x18000000\0" \
 	"fdt_high=0xffffffff\0"	  \
