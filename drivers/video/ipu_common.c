@@ -232,11 +232,15 @@ static void clk_ldb_clk_disable(struct clk *clk)
 	__raw_writel(reg, clk->enable_reg);
 }
 
+#ifndef CONFIG_VIDEO_LDB_CLK
+#define CONFIG_VIDEO_LDB_CLK 65000000
+#endif
+
 static struct clk ldb_clk[2] = {
 	{
 	.name = "ldb_clk",
 	.id = 0,
-	.rate = 65000000,
+	.rate = CONFIG_VIDEO_LDB_CLK,
 #ifdef CONFIG_MX6
 	.enable_reg = (u32 *)(CCM_BASE_ADDR +
 		offsetof(struct mxc_ccm_reg, CCGR3)),
@@ -252,7 +256,7 @@ static struct clk ldb_clk[2] = {
 	}, {
 	.name = "ldb_clk",
 	.id = 1,
-	.rate = 65000000,
+	.rate = CONFIG_VIDEO_LDB_CLK,
 #ifdef CONFIG_MX6
 	.enable_reg = (u32 *)(CCM_BASE_ADDR +
 		offsetof(struct mxc_ccm_reg, CCGR3)),
