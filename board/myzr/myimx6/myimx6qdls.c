@@ -600,6 +600,26 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 2,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= -1,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= NULL,
+	.enable	= enable_lvds,
+	.mode	= {
+		.name           = "NLB084SV01L",
+		.refresh        = 60,
+		.xres           = 800,
+		.yres           = 600,
+		.pixclock       = 28093,
+		.left_margin    = 80, /* hback_porch */
+		.right_margin   = 48, /* hfront_porch */
+		.upper_margin   = 11,  /* vback_porch */
+		.lower_margin   = 3, /* vfront_porch */
+		.hsync_len      = 32,
+		.vsync_len      = 4,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
 
 } } };
 size_t display_count = ARRAY_SIZE(displays);

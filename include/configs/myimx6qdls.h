@@ -278,6 +278,7 @@
 #endif
 #define CONFIG_IMX_HDMI
 #define CONFIG_IMX_VIDEO_SKIP
+#define CONFIG_CMD_BMP
 
 /* MYZR Freescale i.MX6 ***************************************************** */
 #define CONFIG_BOARD_EARLY_INIT_F
@@ -324,6 +325,8 @@
 #define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
 #define CONFIG_TFTPROOT		"cvr-mil-v2-b/images/"
 #define PR_SPEC			"-cm2-b"
+#define CONFIG_PANEL		"NLB084SV01L"
+#define CONFIG_VIDEO_LDB_CLK	35596800
 #elif defined(CONFIG_PR_CVR_MIL_V3)
 #define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
 #define CONFIG_TFTPROOT		"cvr-mil-v3/images/"
@@ -422,6 +425,7 @@
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"panel=" CONFIG_PANEL "\0" \
 	"script=boot.scr\0" \
 	"smp=" CONFIG_SYS_NOSMP "\0" \
 	"splashpos=m,m\0" \
