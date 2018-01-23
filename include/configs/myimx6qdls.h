@@ -337,6 +337,10 @@
 #define PR_SPEC
 #endif
 
+#ifndef CONFIG_PANEL
+#define CONFIG_PANEL		""
+#endif
+
 /* CMD ********************************************************************** */
 #define CONFIG_FAT_WRITE
 #include <config_cmd_default.h>
