@@ -496,6 +496,26 @@ static int detect_mty065(struct display_info_t const *dev)
 	return i2c_probe(dev->addr) == 0 ? 1 : 0;
 }
 
+#define ATM88PA_I2C_BUS		0
+#define ATM88PA_I2C_ADDR	0x7a
+static void enable_nlb084sv01l(struct display_info_t const* dev)
+{
+	uint8_t buf[64];
+
+	/* Enable video output first */
+	enable_lvds(dev);
+
+	i2c_set_bus_num(dev->bus);
+
+	/* LCD_PWR */
+	buf[0] = 1; /* Power on */
+	i2c_write(dev->addr, 0x0b, 1, buf, 1);
+
+	/* LCD_LIGHT */
+	buf[0] = 255; /* Max brightness */
+	i2c_write(dev->addr, 0x0e, 1, buf, 1);
+}
+
 struct display_info_t const displays[] = {{
 #if !defined(CONFIG_TARGET_MYIMX6QJH)
 	.bus	= -1,
@@ -601,11 +621,11 @@ struct display_info_t const displays[] = {{
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
-	.bus	= -1,
-	.addr	= 0,
+	.bus	= ATM88PA_I2C_BUS,
+	.addr	= ATM88PA_I2C_ADDR,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
 	.detect	= NULL,
-	.enable	= enable_lvds,
+	.enable	= enable_nlb084sv01l,
 	.mode	= {
 		.name           = "NLB084SV01L",
 		.refresh        = 60,
