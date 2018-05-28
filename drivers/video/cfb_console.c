@@ -2254,6 +2254,11 @@ static int video_init(void)
 	return 0;
 }
 
+/* Prepare before the video skip */
+__weak void board_video_pre_skip(void)
+{
+}
+
 /*
  * Implement a weak default function for boards that optionally
  * need to skip the video initialization.
@@ -2268,6 +2273,8 @@ int drv_video_init(void)
 {
 	int skip_dev_init;
 	struct stdio_dev console_dev;
+
+	board_video_pre_skip();
 
 	/* Check if video initialization should be skipped */
 	if (board_video_skip())
