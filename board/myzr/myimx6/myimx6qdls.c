@@ -1011,6 +1011,60 @@ int pmic_init(void)
 }
 #endif
 
+#define MTY065_HEATER_I2C_ADDR   0x33
+#define MTY065_HEATER_STATUS_REG 0x01
+#define MTY065_HEATER_TEMPER_REG 0x02
+
+/* Detect the heater module of the mty065x
+ * return true or false
+ */
+static int detect_mty065_heater(int bus)
+{
+	int ret;
+
+	ret = i2c_set_bus_num(bus);
+	if (ret != 0) {
+		printf("I2C Bus %d error.\n", 0);
+		return 0;
+	}
+
+	return i2c_probe(MTY065_HEATER_I2C_ADDR) == 0 ? 1 : 0;
+}
+
+static void wait_for_mty065_ready(void)
+{
+	int ret;
+	u8 status;
+	s8 temper;
+
+	while (1) {
+		ret  = i2c_read(MTY065_HEATER_I2C_ADDR,
+		                MTY065_HEATER_STATUS_REG, 1, &status, 1);
+		ret |= i2c_read(MTY065_HEATER_I2C_ADDR,
+		                MTY065_HEATER_TEMPER_REG, 1, &temper, 1);
+		if (ret != 0)
+			break;
+
+		if (status & 0x01)
+			break;
+
+		printf("The MTY065 is Warming-Up, Current: %d ℃\n", temper);
+
+		mdelay(1000);
+	}
+}
+
+/* Hooking before the board_video_skip() */
+void board_video_pre_skip(void)
+{
+	/* To detect the heater on mty065 and
+	 * Wait for the temperature is ready for working */
+	if (detect_mty065_heater(MTY065_I2C_BUS)) {
+		printf("The MTY065 heater detected.\n");
+		wait_for_mty065_ready();
+	}
+}
+
 int board_init(void)
 {
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
