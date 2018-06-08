@@ -1068,7 +1068,7 @@ static void wait_for_mty065_ready(void)
 		ret  = i2c_read(MTY065_HEATER_I2C_ADDR,
 		                MTY065_HEATER_STATUS_REG, 1, &status, 1);
 		ret |= i2c_read(MTY065_HEATER_I2C_ADDR,
-		                MTY065_HEATER_TEMPER_REG, 1, &temper, 1);
+		                MTY065_HEATER_TEMPER_REG, 1, (u8*)&temper, 1);
 		if (ret != 0)
 			break;
 
