@@ -1011,6 +1011,33 @@ int pmic_init(void)
 }
 #endif
 
+#define ATM88PA_FAULT_REG        0x0f
+static int atm88pa_get_power_led_state(void)
+{
+	int ret;
+	u8 state = 0;
+
+	ret  = i2c_read(ATM88PA_I2C_ADDR, ATM88PA_FAULT_REG, 1, &state, 1);
+	if (ret < 0)
+		return -1;
+
+	return state;
+}
+
+static void atm88pa_set_power_led_state(u8 state)
+{
+	i2c_write(ATM88PA_I2C_ADDR, ATM88PA_FAULT_REG, 1, &state, 1);
+}
+
+static void atm88pa_toggle_power_led_state(void)
+{
+	int state = 0;
+
+	state = atm88pa_get_power_led_state();
+	if (state >= 0)
+		atm88pa_set_power_led_state((~state) & 0x01);
+}
+
 #define MTY065_HEATER_I2C_ADDR   0x33
 #define MTY065_HEATER_STATUS_REG 0x01
 #define MTY065_HEATER_TEMPER_REG 0x02
@@ -1048,10 +1075,16 @@ static void wait_for_mty065_ready(void)
 		if (status & 0x01)
 			break;
 
+		/* Blink the power led */
+		atm88pa_toggle_power_led_state();
+
 		printf("The MTY065 is Warming-Up, Current: %d ℃\n", temper);
 
 		mdelay(1000);
 	}
+
+	/* Reset the power led */
+	atm88pa_set_power_led_state(0);
 }
 
 /* Hooking before the board_video_skip() */
