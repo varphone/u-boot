@@ -1011,7 +1011,14 @@ int pmic_init(void)
 }
 #endif
 
+#define ATM88PA_BC_PWR_CTRL_REG	 0x0D /* R/W */
 #define ATM88PA_FAULT_REG        0x0f
+
+static void atm88pa_ctrl_bcpwr(u8 ctrl)
+{
+	i2c_write(ATM88PA_I2C_ADDR, ATM88PA_BC_PWR_CTRL_REG, 1, &ctrl, 1);
+}
+
 static int atm88pa_get_power_led_state(void)
 {
 	int ret;
@@ -1094,7 +1101,14 @@ void board_video_pre_skip(void)
 	 * Wait for the temperature is ready for working */
 	if (detect_mty065_heater(MTY065_I2C_BUS)) {
 		printf("The MTY065 heater detected.\n");
+		/* The heater need the power of the back camera */
+		atm88pa_ctrl_bcpwr(1);
+
+		/* Wait for warm up */
 		wait_for_mty065_ready();
+
+		/* Power off the back camera after done */
+		atm88pa_ctrl_bcpwr(0);
 	}
 }
 
