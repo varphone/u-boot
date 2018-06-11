@@ -1109,6 +1109,9 @@ void board_video_pre_skip(void)
 
 		/* Power off the back camera after done */
 		atm88pa_ctrl_bcpwr(0);
+
+		/* Delay 1s to wait for mty065 ready */
+		mdelay(1000);
 	}
 }
 
