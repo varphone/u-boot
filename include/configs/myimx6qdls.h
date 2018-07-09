@@ -327,6 +327,11 @@
 #define PR_SPEC			"-cm2-b"
 #define CONFIG_PANEL		"NLB084SV01L"
 #define CONFIG_VIDEO_LDB_CLK	35596800
+#elif defined(CONFIG_PR_CVR_MIL_V2_Y30)
+#define CONFIG_DISPLAY		"video=mxcfb0:dev=adv739x,bt656,BT656-PAL,if=BT656,fbpix=UYVY16,bpp=32"
+#define CONFIG_TFTPROOT		"cvr-mil-v2-y30/images/"
+#define PR_SPEC			"-cm2-y30"
+#define CONFIG_PANEL		"CVBS-PAL"
 #elif defined(CONFIG_PR_CVR_MIL_V3)
 #define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
 #define CONFIG_TFTPROOT		"cvr-mil-v3/images/"
