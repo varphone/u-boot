@@ -686,6 +686,7 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 4,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
+#if 0
 } }, {
 	.bus	= ADV739X_I2C_BUS,
 	.addr	= ADV739X_I2C_ADDR,
@@ -706,6 +707,7 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 1,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_INTERLACED
+#endif
 
 } } };
 size_t display_count = ARRAY_SIZE(displays);
