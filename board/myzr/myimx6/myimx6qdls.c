@@ -516,6 +516,52 @@ static void enable_nlb084sv01l(struct display_info_t const* dev)
 	i2c_write(dev->addr, 0x0e, 1, buf, 1);
 }
 
+#define ADV739X_I2C_BUS     0
+#define ADV739X_I2C_ADDR    0x2b
+static int detect_adv739x_tvout(struct display_info_t const *dev)
+{
+	int ret;
+
+	ret = i2c_set_bus_num(dev->bus);
+	if (ret != 0) {
+		printf("I2C Bus %d error.\n", dev->bus);
+		return 0;
+	}
+
+	return i2c_probe(dev->addr) == 0 ? 1 : 0;
+}
+
+static void adv739x_write(uint8_t sa, uint8_t reg, uint8_t val)
+{
+	i2c_write(sa, reg, 1, &val, 1);
+}
+
+static void enable_adv739x_tvout(struct display_info_t const* dev)
+{
+	/* Enable video output first */
+	enable_rgb(dev);
+
+	i2c_set_bus_num(dev->bus);
+
+	// Reg 0x17: reset
+	adv739x_write(dev->addr, 0x17, 0x02);
+	mdelay(20);
+	// Reg 0x00: DAC1~3 power on
+	adv739x_write(dev->addr, 0x00, 0x1C);
+	// Reg 0x01: SD input
+	adv739x_write(dev->addr, 0x01, 0x00);
+	// Reg 0x80: SD, PAL
+	adv739x_write(dev->addr, 0x80, 0x11);
+	// Reg 0x82: SD, CVBS
+	adv739x_write(dev->addr, 0x82, 0xC3);
+	adv739x_write(dev->addr, 0x8C, 0xCB);
+	adv739x_write(dev->addr, 0x8D, 0x8A);
+	adv739x_write(dev->addr, 0x8E, 0x09);
+	adv739x_write(dev->addr, 0x8F, 0x2A);
+	// Reg 0x84: Color Bar
+	adv739x_write(dev->addr, 0x84, 0x40);
+}
+
 struct display_info_t const displays[] = {{
 #if !defined(CONFIG_TARGET_MYIMX6QJH)
 	.bus	= -1,
@@ -640,6 +686,26 @@ struct display_info_t const displays[] = {{
 		.vsync_len      = 4,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= ADV739X_I2C_BUS,
+	.addr	= ADV739X_I2C_ADDR,
+	.pixfmt	= IPU_PIX_FMT_UYVY,
+	.detect	= detect_adv739x_tvout,
+	.enable	= enable_adv739x_tvout,
+	.mode	= {
+		.name           = "CVBS-PAL",
+		.refresh        = 50,
+		.xres           = 720,
+		.yres           = 576,
+		.pixclock       = 37037,
+		.left_margin    = 22, /* hback_porch */
+		.right_margin   = 2,  /* hfront_porch */
+		.upper_margin   = 23, /* vback_porch */
+		.lower_margin   = 2,  /* vfront_porch */
+		.hsync_len      = 288,
+		.vsync_len      = 1,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_INTERLACED
 
 } } };
 size_t display_count = ARRAY_SIZE(displays);
