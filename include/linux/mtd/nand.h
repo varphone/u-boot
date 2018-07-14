@@ -41,7 +41,7 @@ extern int nand_scan_ident(struct mtd_info *mtd, int max_chips);
 extern int nand_scan_tail(struct mtd_info *mtd);
 
 /* Free resources held by the NAND device */
-extern void nand_release (struct mtd_info *mtd);
+extern void nand_release(struct mtd_info *mtd);
 
 /* Internal helper for board drivers which need to override command function */
 extern void nand_wait_ready(struct mtd_info *mtd);
@@ -50,8 +50,8 @@ extern void nand_wait_ready(struct mtd_info *mtd);
  * is supported now. If you add a chip with bigger oobsize/page
  * adjust this accordingly.
  */
-#define NAND_MAX_OOBSIZE	218
-#define NAND_MAX_PAGESIZE	4096
+#define NAND_MAX_OOBSIZE    4800
+#define NAND_MAX_PAGESIZE   32768
 
 /*
  * Constants for hardware specific CLE/ALE/NCE function
@@ -150,7 +150,7 @@ typedef enum {
 */
 /* Chip can not auto increment pages */
 #define NAND_NO_AUTOINCR	0x00000001
-/* Buswitdh is 16 bit */
+/* Buswidth is 16 bit */
 #define NAND_BUSWIDTH_16	0x00000002
 /* Device supports partial programming without padding */
 #define NAND_NO_PADDING		0x00000004
@@ -438,6 +438,7 @@ struct nand_chip {
 #define NAND_MFR_HYNIX		0xad
 #define NAND_MFR_MICRON		0x2c
 #define NAND_MFR_AMD		0x01
+#define NAND_MFR_GD			0xc8
 
 /**
  * struct nand_flash_dev - NAND Flash Device ID Structure
@@ -467,7 +468,7 @@ struct nand_flash_dev {
 */
 struct nand_manufacturers {
 	int id;
-	char * name;
+	char *name;
 };
 
 extern struct nand_flash_dev nand_flash_ids[];
@@ -480,7 +481,7 @@ extern int nand_isbad_bbt(struct mtd_info *mtd, loff_t offs, int allowbbt);
 extern int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 			   int allowbbt);
 extern int nand_do_read(struct mtd_info *mtd, loff_t from, size_t len,
-			size_t * retlen, uint8_t * buf);
+			size_t *retlen, uint8_t *buf);
 
 /*
 * Constants for oob configuration
@@ -549,6 +550,14 @@ struct platform_nand_chip *get_platform_nandchip(struct mtd_info *mtd)
 	struct nand_chip *chip = mtd->priv;
 
 	return chip->priv;
+}
+
+static inline char *get_ecctype_str(int ecctype)
+{
+	static char *ecctype_string[] = {
+		"None", "1bit/512Byte", "4bits/512Byte", "8bits/512Byte",
+		"24bits/1K", "40bits/1K", "unknown", "unknown"};
+	return ecctype_string[(ecctype & 0x0F)];
 }
 
 #endif /* __LINUX_MTD_NAND_H */

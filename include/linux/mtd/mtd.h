@@ -55,6 +55,7 @@ struct erase_info {
 	u_long priv;
 	u_char state;
 	struct erase_info *next;
+	int scrub;
 };
 
 struct mtd_erase_region_info {
@@ -131,6 +132,7 @@ struct mtd_info {
 
 	u_int32_t oobsize;   /* Amount of OOB data per block (e.g. 16) */
 	u_int32_t oobavail;  /* Available OOB bytes per block */
+	u_int32_t oobused;   /* yaffs2 use oob size, it smaller than oobsize */
 
 	/* Kernel-only stuff starts here. */
 	const char *name;
@@ -238,6 +240,31 @@ struct mtd_info {
 	int (*get_device) (struct mtd_info *mtd);
 	void (*put_device) (struct mtd_info *mtd);
 };
+
+/*
+ *  this interface for iTools and application used.
+ */
+struct mtd_info_ex
+{
+	u_char    type;      /* chip type  MTD_NORFLASH / MTD_NANDFLASH */
+	uint64_t  chipsize;  /* total size of the nand/spi chip */
+	u_int32_t erasesize;
+	u_int32_t pagesize;
+	u_int32_t numchips;  /* number of nand chips */
+
+	u_int32_t oobsize;
+	u_int32_t addrcycle;
+	u_int32_t ecctype;
+
+	u_char    ids[8];
+	u_int32_t id_length;
+	char      name[16]; /* chip names */
+	int hostver; /* host controller version */
+};
+
+extern struct mtd_info_ex * get_nand_info(void);
+
+extern struct mtd_info_ex * get_spiflash_info(void);
 
 static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
 {

@@ -48,6 +48,7 @@ COBJS-y += string.o
 COBJS-y	+= strmhz.o
 COBJS-y += time.o
 COBJS-y += vsprintf.o
+COBJS-y += match_table.o
 COBJS-$(CONFIG_ZLIB) += zlib.o
 COBJS-$(CONFIG_RBTREE)	+= rbtree.o
 

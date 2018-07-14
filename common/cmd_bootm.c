@@ -324,6 +324,7 @@ static int bootm_start(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 #define BOOTM_ERR_RESET		-1
 #define BOOTM_ERR_OVERLAP	-2
 #define BOOTM_ERR_UNIMPLEMENTED	-3
+#define BOOTM_STACK_GUARD	(32 * 1024)
 static int bootm_load_os(image_info_t os, ulong *load_end, int boot_progress)
 {
 	uint8_t comp = os.comp;
@@ -333,12 +334,31 @@ static int bootm_load_os(image_info_t os, ulong *load_end, int boot_progress)
 	ulong image_start = os.image_start;
 	ulong image_len = os.image_len;
 	uint unc_len = CONFIG_SYS_BOOTM_LEN;
+	ulong image_end;
 
 	const char *type_name = genimg_get_type_name (os.type);
+	int boot_sp;
+
+	__asm__ __volatile__(
+		"mov    %0, sp\n"
+		:"=r"(boot_sp)
+		:
+		:"cc"
+		);
+
+	/* Check whether kernel zImage overwrite uboot,
+	 * which will lead to kernel boot fail. */
+	image_end = load + image_len;
+	/* leave at most 32KByte for move image stack */
+	boot_sp -= BOOTM_STACK_GUARD;
+	if( !((load > _bss_end) || (image_end < boot_sp)) ) {
+		printf("\nkernel image will overwrite uboot! kernel boot fail!\n");
+		return BOOTM_ERR_RESET;
+	}
 
 	switch (comp) {
 	case IH_COMP_NONE:
-		if (load == blob_start) {
+		if (load == blob_start || load == image_start) {
 			printf ("   XIP %s ... ", type_name);
 		} else {
 			printf ("   Loading %s ... ", type_name);

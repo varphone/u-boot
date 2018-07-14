@@ -27,13 +27,19 @@
 #include <u-boot/zlib.h>
 #include <asm/byteorder.h>
 
+#include <cmd_bootss.h>
+
 DECLARE_GLOBAL_DATA_PTR;
 
-#if defined (CONFIG_SETUP_MEMORY_TAGS) || \
-    defined (CONFIG_CMDLINE_TAG) || \
-    defined (CONFIG_INITRD_TAG) || \
-    defined (CONFIG_SERIAL_TAG) || \
-    defined (CONFIG_REVISION_TAG)
+#if defined(CONFIG_SETUP_MEMORY_TAGS) || \
+defined(CONFIG_CMDLINE_TAG) || \
+defined(CONFIG_INITRD_TAG) || \
+defined(CONFIG_SERIAL_TAG) || \
+defined(CONFIG_REVISION_TAG) || \
+defined(CONFIG_ETHADDR_TAG) || \
+defined(CONFIG_ETHMDIO_INF) || \
+defined(CONFIG_NANDID_TAG) || \
+defined(CONFIG_SPIID_TAG)
 static void setup_start_tag (bd_t *bd);
 
 # ifdef CONFIG_SETUP_MEMORY_TAGS
@@ -46,6 +52,22 @@ static void setup_initrd_tag (bd_t *bd, ulong initrd_start,
 			      ulong initrd_end);
 # endif
 static void setup_end_tag (bd_t *bd);
+
+# if defined(CONFIG_ETHMDIO_INF)
+static void setup_eth_mdiointf_tag(bd_t *bd, char *mdio_intf);
+#endif
+
+# if defined(CONFIG_ETHADDR_TAG)
+static void setup_ethaddr_tag(bd_t *bd, char* ethaddr);
+#endif
+
+# if defined(CONFIG_NANDID_TAG)
+static void setup_nandid_tag(bd_t *bd);
+#endif
+
+# if defined(CONFIG_SPIID_TAG)
+static void setup_spiid_tag(bd_t *bd);
+#endif
 
 static struct tag *params;
 #endif /* CONFIG_SETUP_MEMORY_TAGS || CONFIG_CMDLINE_TAG || CONFIG_INITRD_TAG */
@@ -99,6 +121,18 @@ int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
 	if (images->rd_start && images->rd_end)
 		setup_initrd_tag (bd, images->rd_start, images->rd_end);
 #endif
+#if defined(CONFIG_ETHMDIO_INF)
+	setup_eth_mdiointf_tag(bd, getenv("mdio_intf"));
+#endif
+#if defined(CONFIG_ETHADDR_TAG)
+	setup_ethaddr_tag(bd, getenv("ethaddr"));
+#endif
+#if defined(CONFIG_NANDID_TAG)
+	setup_nandid_tag(bd);
+#endif
+#if defined(CONFIG_SPIID_TAG)
+	setup_spiid_tag(bd);
+#endif
 	setup_end_tag (bd);
 #endif
 
@@ -121,11 +155,12 @@ int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
 }
 
 
-#if defined (CONFIG_SETUP_MEMORY_TAGS) || \
-    defined (CONFIG_CMDLINE_TAG) || \
-    defined (CONFIG_INITRD_TAG) || \
-    defined (CONFIG_SERIAL_TAG) || \
-    defined (CONFIG_REVISION_TAG)
+#if defined(CONFIG_SETUP_MEMORY_TAGS) || \
+defined(CONFIG_CMDLINE_TAG) || \
+defined(CONFIG_INITRD_TAG) || \
+defined(CONFIG_SERIAL_TAG) || \
+defined(CONFIG_REVISION_TAG) || \
+defined(CONFIG_ETHADDR_TAG)
 static void setup_start_tag (bd_t *bd)
 {
 	params = (struct tag *) bd->bi_boot_params;
@@ -183,7 +218,83 @@ static void setup_commandline_tag (bd_t *bd, char *commandline)
 
 	params = tag_next (params);
 }
+#ifdef CONFIG_ETHMDIO_INF
+static void setup_eth_mdiointf_tag(bd_t *bd, char *mdio_intf)
+{
+	unsigned char mac[6];
+	if (!mdio_intf)
+		return ;
+	params->hdr.tag = CONFIG_ETH_MDIO_INF_TAG_VAL;
+	params->hdr.size = 4;
 
+	memcpy(&params->u, mdio_intf, (strlen(mdio_intf)+1));
+	params = tag_next(params);
+}
+#endif
+#ifdef CONFIG_ETHADDR_TAG
+static void string_to_mac(unsigned char *mac, char* s)
+{
+	int i;
+	char *e;
+
+	for (i = 0; i < 6; ++i) {
+		mac[i] = s ? simple_strtoul(s, &e, 16) : 0;
+		if (s)
+			s = (*e) ? e+1 : e;
+	}
+}
+
+static void setup_ethaddr_tag(bd_t *bd, char *ethaddr)
+{
+	unsigned char mac[6];
+	if (!ethaddr)
+		return ;
+
+	params->hdr.tag = CONFIG_ETHADDR_TAG_VAL;
+	params->hdr.size = 4;
+
+	string_to_mac(&mac[0], ethaddr);
+	memcpy(&params->u, mac, 6);
+
+	params = tag_next(params);
+}
+#endif
+
+#ifdef CONFIG_NANDID_TAG
+extern struct nand_tag nandtag[1];
+
+static void setup_nandid_tag(bd_t *bd)
+{
+	if (nandtag->length == 0)
+		return;
+
+	params->hdr.tag = ATAG_NDNDID;
+	params->hdr.size = (sizeof(struct tag_header)
+			+ sizeof(struct nand_tag)) >> 2;
+
+	memcpy(&params->u, nandtag, sizeof(struct nand_tag));
+
+	params = tag_next(params);
+}
+#endif
+
+#ifdef CONFIG_SPIID_TAG
+extern struct spi_tag spitag[1];
+
+static void setup_spiid_tag(bd_t *bd)
+{
+	if (spitag->id_len == 0)
+		return;
+
+	params->hdr.tag = ATAG_SPIID;
+	params->hdr.size = (sizeof(struct tag_header) +
+			sizeof(struct spi_tag)) >> 2;
+
+	memcpy(&params->u, &spitag, sizeof(struct spi_tag));
+
+	params = tag_next(params);
+}
+#endif
 
 #ifdef CONFIG_INITRD_TAG
 static void setup_initrd_tag (bd_t *bd, ulong initrd_start, ulong initrd_end)
@@ -240,3 +351,55 @@ static void setup_end_tag (bd_t *bd)
 }
 
 #endif /* CONFIG_SETUP_MEMORY_TAGS || CONFIG_CMDLINE_TAG || CONFIG_INITRD_TAG */
+
+/*============================================================================
+ *
+ * Function used for snapshot boot (bootss command)
+ *
+ *============================================================================*/
+#ifdef CONFIG_SNAPSHOT_BOOT
+extern void restore_processor_state_ext(void *, unsigned long);
+
+extern void v7_inv_dcache_all(unsigned);
+
+static void printf_ss_info(unsigned s, unsigned c)
+{
+	unsigned int tmp;
+	asm volatile ("mrc p15, 0, %0, c0, c2, 4" : "=r"(tmp) : : "memory");
+	if (((tmp >> 16) & 0xf) != 1)
+		printf("WARN: it does not support DMB,DSB and ISB!\n");
+
+	debug("\nbootss: jumping to kernel resume point: 0x%08x with 0x%08x\n",
+			 s, c);
+}
+
+
+#define __NO_IOMEM_FUNCTIONS__
+#include <asm/arch/mmu.h>
+#include <asm/mmu.h>
+#include <asm/cache-cp15.h>
+#undef  __NO_IOMEM_FUNCTIONS__
+
+
+void ss_jump_to_resume_ext(unsigned long func, unsigned long data)
+{
+	/* calculate a physical address based on a Linux TTB */
+	data = __virt_to_phys(data);
+
+	if (func == (unsigned long)-1 || data == (unsigned long)-1)
+		return;
+
+	printf_ss_info(func, data);
+
+	/* MMU off, flush all, invalidate all */
+	cleanup_before_linux();
+
+	/* memory/data/instruction barriers */
+	asm volatile ("dmb" : : : "memory");
+	asm volatile ("dsb" : : : "memory");
+	asm volatile ("isb" : : : "memory");
+
+	/* restore CP15 state, which was saved in Linux */
+	restore_processor_state_ext((void *)data, func);
+}
+#endif

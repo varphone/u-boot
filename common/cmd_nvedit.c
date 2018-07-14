@@ -313,7 +313,12 @@ int _do_setenv (int flag, int argc, char *argv[])
 
 	/* Delete only ? */
 	if ((argc < 3) || argv[2] == NULL) {
-		env_crc_update ();
+		/* 
+		 * optimize uboot startup time, only do_saveenv command update CRC, 
+		 * so if you want do saveenv, you should call function env_crc_update() 
+		 * before call function saveenv()
+		 */
+		/* env_crc_update (); */
 		return 0;
 	}
 
@@ -351,7 +356,12 @@ int _do_setenv (int flag, int argc, char *argv[])
 	*++env = '\0';
 
 	/* Update CRC */
-	env_crc_update ();
+	/* 
+	 * optimize uboot startup time, only do_saveenv command update CRC, 
+	 * so if you want do saveenv, you should call function env_crc_update() 
+	 * before call function saveenv()
+	 */
+	/* env_crc_update (); */
 
 	/*
 	 * Some variables should be updated when the corresponding
@@ -593,6 +603,13 @@ int do_saveenv (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	extern char * env_name_spec;
 
 	printf ("Saving Environment to %s...\n", env_name_spec);
+
+	/* 
+	 * optimize uboot startup time, only do_saveenv command update CRC, 
+	 * so if you want do saveenv, you should call function env_crc_update() 
+	 * before call function saveenv()
+	 */
+	env_crc_update ();
 
 	return (saveenv() ? 1 : 0);
 }

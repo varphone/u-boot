@@ -210,31 +210,66 @@ free_buffer:
 	return err;
 }
 
-static ulong mmc_bread(int dev_num, ulong start, lbaint_t blkcnt, void *dst)
+/* surport multiblk read */
+static ulong mmc_mbread(int dev_num, ulong start, lbaint_t blkcnt, void *dst)
 {
+	struct mmc_cmd cmd;
+	struct mmc_data data;
 	int err;
-	int i;
+	int stoperr = 0;
 	struct mmc *mmc = find_mmc_device(dev_num);
 
 	if (!mmc)
+		return 0;
+
+	if (0 == blkcnt)
 		return 0;
 
 	/* We always do full block reads from the card */
 	err = mmc_set_blocklen(mmc, mmc->read_bl_len);
 
 	if (err) {
-		return 0;
+		printf("set read bl len failed\n");
+		return err;
 	}
 
-	for (i = start; i < start + blkcnt; i++, dst += mmc->read_bl_len) {
-		err = mmc_read_block(mmc, dst, i);
+	if (blkcnt > 1)
+		cmd.cmdidx = MMC_CMD_READ_MULTIPLE_BLOCK;
+	else
+		cmd.cmdidx = MMC_CMD_READ_SINGLE_BLOCK;
 
-		if (err) {
-			printf("block read failed: %d\n", err);
-			return i - start;
+	if (mmc->high_capacity)
+		cmd.cmdarg = start;
+	else
+		cmd.cmdarg = start * mmc->read_bl_len;
+
+	cmd.resp_type = MMC_RSP_R1;
+	cmd.flags = 0;
+
+	data.dest = dst;
+	data.blocks = blkcnt;
+	data.blocksize = mmc->read_bl_len;
+	data.flags = MMC_DATA_READ;
+
+	err = mmc_send_cmd(mmc, &cmd, &data);
+
+	if (err) {
+		printf("mmc read failed\n\r");
+		return err;
+	}
+
+	if (blkcnt > 1) {
+		cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
+		cmd.cmdarg = 0;
+		cmd.resp_type = MMC_RSP_R1b;
+		cmd.flags = 0;
+		stoperr = mmc_send_cmd(mmc, &cmd, NULL);
+		if (stoperr) {
+			printf("mmc read stop failed!\n");
+			return stoperr;
 		}
-	}
 
+	}
 	return blkcnt;
 }
 
@@ -400,15 +435,26 @@ int mmc_change_freq(struct mmc *mmc)
 	if (mmc->version < MMC_VERSION_4)
 		return 0;
 
-	mmc->card_caps |= MMC_MODE_4BIT;
+	mmc->card_caps |= MMC_MODE_4BIT | MMC_MODE_8BIT;
 
 	err = mmc_send_ext_csd(mmc, ext_csd);
 
 	if (err)
 		return err;
 
-	if (ext_csd[212] || ext_csd[213] || ext_csd[214] || ext_csd[215])
+	if (ext_csd[212] || ext_csd[213] || ext_csd[214] || ext_csd[215]) {
 		mmc->high_capacity = 1;
+
+		if (ext_csd[EXT_CSD_REV] >= 2) {
+			mmc->capacity =
+				ext_csd[EXT_CSD_SEC_CNT + 0] << 0 |
+				ext_csd[EXT_CSD_SEC_CNT + 1] << 8 |
+				ext_csd[EXT_CSD_SEC_CNT + 2] << 16 |
+				ext_csd[EXT_CSD_SEC_CNT + 3] << 24;
+			mmc->capacity -= ext_csd[EXT_CSD_BOOT_SIZE_MULTI] * 512;
+			mmc->capacity *= 512;
+		}
+	}
 
 	cardtype = ext_csd[196] & 0xf;
 
@@ -770,17 +816,7 @@ int mmc_startup(struct mmc *mmc)
 		else
 			mmc_set_clock(mmc, 25000000);
 	} else {
-		if (mmc->card_caps & MMC_MODE_4BIT) {
-			/* Set the card to use 4 bit*/
-			err = mmc_switch(mmc, EXT_CSD_CMD_SET_NORMAL,
-					EXT_CSD_BUS_WIDTH,
-					EXT_CSD_BUS_WIDTH_4);
-
-			if (err)
-				return err;
-
-			mmc_set_bus_width(mmc, 4);
-		} else if (mmc->card_caps & MMC_MODE_8BIT) {
+		if (mmc->card_caps & MMC_MODE_8BIT) {
 			/* Set the card to use 8 bit*/
 			err = mmc_switch(mmc, EXT_CSD_CMD_SET_NORMAL,
 					EXT_CSD_BUS_WIDTH,
@@ -790,6 +826,16 @@ int mmc_startup(struct mmc *mmc)
 				return err;
 
 			mmc_set_bus_width(mmc, 8);
+		} else if (mmc->card_caps & MMC_MODE_4BIT) {
+			/* Set the card to use 4 bit*/
+			err = mmc_switch(mmc, EXT_CSD_CMD_SET_NORMAL,
+					EXT_CSD_BUS_WIDTH,
+					EXT_CSD_BUS_WIDTH_4);
+
+			if (err)
+				return err;
+
+			mmc_set_bus_width(mmc, 4);
 		}
 
 		if (mmc->card_caps & MMC_MODE_HS) {
@@ -813,7 +859,6 @@ int mmc_startup(struct mmc *mmc)
 			(mmc->cid[1] >> 8) & 0xff, mmc->cid[1] & 0xff);
 	sprintf(mmc->block_dev.revision, "%d.%d", mmc->cid[2] >> 28,
 			(mmc->cid[2] >> 24) & 0xf);
-	init_part(&mmc->block_dev);
 
 	return 0;
 }
@@ -846,9 +891,10 @@ int mmc_register(struct mmc *mmc)
 {
 	/* Setup the universal parts of the block interface just once */
 	mmc->block_dev.if_type = IF_TYPE_MMC;
+	mmc->block_dev.part_type = PART_TYPE_DOS;
 	mmc->block_dev.dev = cur_dev_num++;
 	mmc->block_dev.removable = 1;
-	mmc->block_dev.block_read = mmc_bread;
+	mmc->block_dev.block_read = mmc_mbread;
 	mmc->block_dev.block_write = mmc_bwrite;
 
 	INIT_LIST_HEAD (&mmc->link);
@@ -912,7 +958,7 @@ static int __def_mmc_init(bd_t *bis)
 }
 
 int cpu_mmc_init(bd_t *bis) __attribute__((weak, alias("__def_mmc_init")));
-int board_mmc_init(bd_t *bis) __attribute__((weak, alias("__def_mmc_init")));
+extern int board_mmc_init(bd_t *bis);
 
 void print_mmc_devices(char separator)
 {
@@ -938,8 +984,6 @@ int mmc_initialize(bd_t *bis)
 
 	if (board_mmc_init(bis) < 0)
 		cpu_mmc_init(bis);
-
-	print_mmc_devices(',');
 
 	return 0;
 }

@@ -23,6 +23,8 @@
 
 #include <common.h>
 #include <asm/system.h>
+#include <asm/sizes.h>
+#include <asm/arch/platform.h>
 
 #if !(defined(CONFIG_SYS_NO_ICACHE) && defined(CONFIG_SYS_NO_DCACHE))
 static void cp_delay (void)
@@ -118,3 +120,39 @@ int dcache_status(void)
 	return (get_cr() & CR_C) != 0;
 }
 #endif
+
+extern void mmu_turnoff(void);
+extern void mmu_pagedir_init(unsigned long);
+extern void mmu_pagedir_cached_range(unsigned long,
+		unsigned long, unsigned long);
+extern void mmu_startup(unsigned long);
+extern void dcache_flush_all(void);
+extern void dcache_inv_all(void);
+
+void enable_mmu(void)
+{
+	unsigned long pdt = MEM_BASE_DDR + SZ_64K;
+	mmu_pagedir_init(pdt);
+	mmu_pagedir_cached_range(pdt, MEM_BASE_DDR, SZ_64M);
+	mmu_startup(pdt);
+
+	return;
+}
+
+void stop_mmu(void)
+{
+	int i = 0;
+	dcache_flush_all();
+
+	/* mem barrier to sync up things */
+	asm("mcr p15, 0, %0, c7, c10, 4" : : "r"(i));
+
+	dcache_inv_all();
+
+	mmu_turnoff();
+
+	return;
+}
+
+extern void enable_mmu(void);
+extern void stop_mmu(void);

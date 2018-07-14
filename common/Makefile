@@ -25,7 +25,7 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)libcommon.a
 
-AOBJS	=
+COBJS-$(CONFIG_BOOTROM_SUPPORT) += download_process.o
 
 # core
 COBJS-y += main.o
@@ -40,16 +40,22 @@ COBJS-y += s_record.o
 COBJS-$(CONFIG_SERIAL_MULTI) += serial.o
 COBJS-y += stdio.o
 COBJS-y += xyzModem.o
-
+COBJS-y += flash_part.o
+COBJS-$(CONFIG_CMD_SF) += spiflash_logif.o
+COBJS-$(CONFIG_CMD_NAND) += nand_logif.o
 # core command
+COBJS-y += cmd_getinfo.o
 COBJS-y += cmd_boot.o
 COBJS-y += cmd_bootm.o
 COBJS-y += cmd_help.o
 COBJS-y += cmd_nvedit.o
 COBJS-y += cmd_version.o
+#ddr training command
+COBJS-$(CONFIG_DDR_TRAINING) += cmd_ddrtraining.o
+COBJS-$(CONFIG_DDR_TRAINING_V200) += cmd_ddrtrainingv200.o
 
 # environment
-COBJS-y += env_common.o
+COBJS-y += env_common.o env_common_func.o
 COBJS-$(CONFIG_ENV_IS_IN_DATAFLASH) += env_dataflash.o
 COBJS-$(CONFIG_ENV_IS_IN_EEPROM) += env_eeprom.o
 COBJS-$(CONFIG_ENV_IS_EMBEDDED) += env_embedded.o
@@ -62,6 +68,7 @@ COBJS-$(CONFIG_ENV_IS_IN_NAND) += env_nand.o
 COBJS-$(CONFIG_ENV_IS_IN_NVRAM) += env_nvram.o
 COBJS-$(CONFIG_ENV_IS_IN_ONENAND) += env_onenand.o
 COBJS-$(CONFIG_ENV_IS_IN_SPI_FLASH) += env_sf.o
+COBJS-$(CONFIG_ENV_IS_IN_EMMC) += env_emmc.o
 COBJS-$(CONFIG_ENV_IS_NOWHERE) += env_nowhere.o
 
 # command
@@ -165,19 +172,31 @@ COBJS-$(CONFIG_LYNXKDI) += lynxkdi.o
 COBJS-$(CONFIG_MODEM_SUPPORT) += modem.o
 COBJS-$(CONFIG_UPDATE_TFTP) += update.o
 COBJS-$(CONFIG_USB_KEYBOARD) += usb_kbd.o
+AOBJS-$(CONFIG_DDR_TRAINING_V300) += ddr_training_entry.o
+COBJS-$(CONFIG_DDR_TRAINING_V300) += cmd_ddr_training_v300.o
+COBJS-$(CONFIG_DDR_TRAINING_HI3535)  += hi3535_ddr_training_printf.o
+COBJS-$(CONFIG_DDR_TRAINING_HI3516A)  += hi3516a_ddr_training_printf.o
 
+sinclude Makefile-osd
 
+AOBJS	:= $(sort $(AOBJS-y))
 COBJS	:= $(sort $(COBJS-y))
 SRCS	:= $(AOBJS:.o=.S) $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(AOBJS) $(COBJS))
 
+SRCS    += $(obj)crc32.c
+
 CPPFLAGS += -I..
 
-all:	$(LIB) $(AOBJS)
+all:	$(LIB) $(AOBJS) bootss2
 
 $(LIB): $(obj).depend $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
+bootss2:
+ifdef CONFIG_SNAPSHOT_BOOT
+	cp cmd_bootss2 bootss2.a -rf
+endif
 $(obj)env_embedded.o: $(src)env_embedded.c $(obj)../tools/envcrc
 	$(CC) $(AFLAGS) -Wa,--no-warn \
 		-DENV_CRC=$(shell $(obj)../tools/envcrc) \
@@ -185,6 +204,9 @@ $(obj)env_embedded.o: $(src)env_embedded.c $(obj)../tools/envcrc
 
 $(obj)../tools/envcrc:
 	$(MAKE) -C ../tools
+
+$(obj)crc32.c:
+	ln -s $(src)$(SRCTREE)/lib/crc32.c $(obj)crc32.c
 
 #########################################################################
 

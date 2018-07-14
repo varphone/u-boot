@@ -479,10 +479,8 @@ void main_loop (void)
 		else
 			rc = run_command (lastcommand, flag);
 
-		if (rc <= 0) {
 			/* invalid command or not repeatable, forget it */
 			lastcommand[0] = 0;
-		}
 	}
 #endif /*CONFIG_SYS_HUSH_PARSER*/
 }
@@ -966,13 +964,12 @@ int readline_into_buffer (const char *const prompt, char * buffer)
 	 * Revert to non-history version if still
 	 * running from flash.
 	 */
-	if (gd->flags & GD_FLG_RELOC) {
+	if ((gd->flags & GD_FLG_RELOC)||(gd->flags & GD_FLG_DEVINIT)) {
 		if (!initted) {
 			hist_init();
 			initted = 1;
 		}
 
-		if (prompt)
 			puts (prompt);
 
 		rc = cread_line(prompt, p, &len);
