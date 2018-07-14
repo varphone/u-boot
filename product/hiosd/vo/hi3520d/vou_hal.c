@@ -521,7 +521,7 @@ HI_VOID HAL_SYS_Control(HI_VOID)
 }
 
 
-HI_U32 inline HAL_GetXDC_BUMA(HI_S32 s32Value)
+HI_U32 HAL_GetXDC_BUMA(HI_S32 s32Value)
 {
     HI_U32 u32AbsValue = 0;
 
@@ -538,7 +538,7 @@ HI_U32 inline HAL_GetXDC_BUMA(HI_S32 s32Value)
     }
 }
 
-HI_U32 inline HAL_Conver_CscCoef(HI_S32 s32Value)
+HI_U32 HAL_Conver_CscCoef(HI_S32 s32Value)
 {
     HI_S32 s32Result = ((s32Value << 8) / 1000);
 
