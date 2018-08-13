@@ -4,7 +4,8 @@
  *  Copyright (C) 2012 National Instruments Corp.
  */
 /dts-v1/;
-#include "zynq-7000.dtsi"
+#include "zynq-7000-mmc1-mmc0.dtsi"
+#include "zynq-mpcam-v1-pl.dtsi"
 
 / {
 	model = "Multiple Path Camera on Zynq ZC702 (V1)";
@@ -15,6 +16,7 @@
 		serial0 = &uart1;
 		spi0 = &qspi;
 		mmc0 = &sdhci0;
+		mmc1 = &sdhci1;
 	};
 
 	memory {
@@ -23,7 +25,7 @@
 	};
 
 	chosen {
-		bootargs = "console=ttyPS0,115200 earlyprintk panic=1 root=/dev/mmcblk0p2 rw rootwait";
+		bootargs = "console=ttyPS0,115200 earlyprintk panic=1 root=/dev/mmcblk0p2 rw rootwait earlycon clk_ignore_unused uio_pdrv_genirq.of_id=generic-uio";
 		stdout-path = "serial0:115200n8";
 	};
 
@@ -88,6 +90,11 @@
 };
 
 &sdhci0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&sdhci1 {
 	u-boot,dm-pre-reloc;
 	status = "okay";
 };
