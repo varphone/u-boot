@@ -1160,6 +1160,8 @@ static void wait_for_mty065_ready(void)
 
 	/* Reset the power led */
 	atm88pa_set_power_led_state(0);
+
+	printf("The MTY065 heating was complete!\n");
 }
 
 /* Hooking before the board_video_skip() */
