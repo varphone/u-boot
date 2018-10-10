@@ -409,6 +409,10 @@ static void enable_lvds(struct display_info_t const *dev)
 static void enable_mty065(struct display_info_t const* dev)
 {
 	uint8_t buf[64];
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
 
 	i2c_set_bus_num(dev->bus);
 
@@ -476,6 +480,9 @@ static void enable_mty065(struct display_info_t const* dev)
 	buf[0] = 0x00;
 	i2c_write(dev->addr, 0x1a, 1, buf, 1);
 
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+
 	enable_lvds(dev);
 }
 
@@ -486,14 +493,19 @@ static void enable_mty065(struct display_info_t const* dev)
 static int detect_mty065(struct display_info_t const *dev)
 {
 	int ret;
+	unsigned int old_bus;
 
-	ret = i2c_set_bus_num(dev->bus);
-	if (ret != 0) {
-		printf("I2C Bus %d error.\n", dev->bus);
-		return 0;
-	}
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
 
-	return i2c_probe(dev->addr) == 0 ? 1 : 0;
+	i2c_set_bus_num(dev->bus);
+
+	ret = i2c_probe(dev->addr) == 0 ? 1 : 0;
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+
+	return ret;
 }
 
 #define ATM88PA_I2C_BUS		0
@@ -501,9 +513,13 @@ static int detect_mty065(struct display_info_t const *dev)
 static void enable_nlb084sv01l(struct display_info_t const* dev)
 {
 	uint8_t buf[64];
+	unsigned int old_bus;
 
 	/* Enable video output first */
 	enable_lvds(dev);
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
 
 	i2c_set_bus_num(dev->bus);
 
@@ -514,6 +530,9 @@ static void enable_nlb084sv01l(struct display_info_t const* dev)
 	/* LCD_LIGHT */
 	buf[0] = 255; /* Max brightness */
 	i2c_write(dev->addr, 0x0e, 1, buf, 1);
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
 }
 
 #define ADV739X_I2C_BUS     0
@@ -521,14 +540,19 @@ static void enable_nlb084sv01l(struct display_info_t const* dev)
 static int detect_adv739x_tvout(struct display_info_t const *dev)
 {
 	int ret;
+	unsigned int old_bus;
 
-	ret = i2c_set_bus_num(dev->bus);
-	if (ret != 0) {
-		printf("I2C Bus %d error.\n", dev->bus);
-		return 0;
-	}
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
 
-	return i2c_probe(dev->addr) == 0 ? 1 : 0;
+	i2c_set_bus_num(dev->bus);
+
+	ret = i2c_probe(dev->addr) == 0 ? 1 : 0;
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+
+	return ret;
 }
 
 static void adv739x_write(uint8_t sa, uint8_t reg, uint8_t val)
@@ -538,8 +562,13 @@ static void adv739x_write(uint8_t sa, uint8_t reg, uint8_t val)
 
 static void enable_adv739x_tvout(struct display_info_t const* dev)
 {
+	unsigned int old_bus;
+
 	/* Enable video output first */
 	enable_rgb(dev);
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
 
 	i2c_set_bus_num(dev->bus);
 
@@ -560,6 +589,9 @@ static void enable_adv739x_tvout(struct display_info_t const* dev)
 	adv739x_write(dev->addr, 0x8F, 0x2A);
 	// Reg 0x84: Color Bar
 	adv739x_write(dev->addr, 0x84, 0x40);
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
 }
 
 struct display_info_t const displays[] = {{
@@ -1084,24 +1116,53 @@ int pmic_init(void)
 
 static void atm88pa_ctrl_bcpwr(u8 ctrl)
 {
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(ATM88PA_I2C_BUS);
+
 	i2c_write(ATM88PA_I2C_ADDR, ATM88PA_BC_PWR_CTRL_REG, 1, &ctrl, 1);
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
 }
 
 static int atm88pa_get_power_led_state(void)
 {
 	int ret;
 	u8 state = 0;
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(ATM88PA_I2C_BUS);
 
 	ret  = i2c_read(ATM88PA_I2C_ADDR, ATM88PA_FAULT_REG, 1, &state, 1);
 	if (ret < 0)
-		return -1;
+		state = -1;
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
 
 	return state;
 }
 
 static void atm88pa_set_power_led_state(u8 state)
 {
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(ATM88PA_I2C_BUS);
+
 	i2c_write(ATM88PA_I2C_ADDR, ATM88PA_FAULT_REG, 1, &state, 1);
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
 }
 
 static void atm88pa_toggle_power_led_state(void)
@@ -1123,32 +1184,47 @@ static void atm88pa_toggle_power_led_state(void)
 static int detect_mty065_heater(int bus)
 {
 	int ret;
+	unsigned int old_bus;
 
-	ret = i2c_set_bus_num(bus);
-	if (ret != 0) {
-		printf("I2C Bus %d error.\n", 0);
-		return 0;
-	}
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
 
-	return i2c_probe(MTY065_HEATER_I2C_ADDR) == 0 ? 1 : 0;
+	i2c_set_bus_num(bus);
+
+	ret = i2c_probe(MTY065_HEATER_I2C_ADDR) == 0 ? 1 : 0;
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+
+	return ret;
 }
 
-static void wait_for_mty065_ready(void)
+static void wait_for_mty065_ready(int bus)
 {
 	int ret;
 	u8 status;
 	s8 temper;
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(bus);
 
 	while (1) {
 		ret  = i2c_read(MTY065_HEATER_I2C_ADDR,
 		                MTY065_HEATER_STATUS_REG, 1, &status, 1);
 		ret |= i2c_read(MTY065_HEATER_I2C_ADDR,
 		                MTY065_HEATER_TEMPER_REG, 1, (u8*)&temper, 1);
-		if (ret != 0)
+		if (ret != 0) {
+			printf("Error: Read MTY065 Heater registers failed, ret = %d\n", ret);
 			break;
+		}
 
-		if (status & 0x01)
+		if (status & 0x01) {
+			printf("The MTY065 marked \"Working\", status = %x\n", status);
 			break;
+		}
 
 		/* Blink the power led */
 		atm88pa_toggle_power_led_state();
@@ -1160,6 +1236,9 @@ static void wait_for_mty065_ready(void)
 
 	/* Reset the power led */
 	atm88pa_set_power_led_state(0);
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
 
 	printf("The MTY065 heating was complete!\n");
 }
@@ -1175,7 +1254,7 @@ void board_video_pre_skip(void)
 		atm88pa_ctrl_bcpwr(1);
 
 		/* Wait for warm up */
-		wait_for_mty065_ready();
+		wait_for_mty065_ready(MTY065_I2C_BUS);
 
 		/* Power off the back camera after done */
 		atm88pa_ctrl_bcpwr(0);
