@@ -1246,22 +1246,26 @@ static void wait_for_mty065_ready(int bus)
 /* Hooking before the board_video_skip() */
 void board_video_pre_skip(void)
 {
+	/* The heater need the power of the back camera */
+	atm88pa_ctrl_bcpwr(1);
+
+	/* Delay 500ms wait for the heater power-on */
+	mdelay(500);
+
 	/* To detect the heater on mty065 and
 	 * Wait for the temperature is ready for working */
 	if (detect_mty065_heater(MTY065_I2C_BUS)) {
 		printf("The MTY065 heater detected.\n");
-		/* The heater need the power of the back camera */
-		atm88pa_ctrl_bcpwr(1);
 
 		/* Wait for warm up */
 		wait_for_mty065_ready(MTY065_I2C_BUS);
 
-		/* Power off the back camera after done */
-		atm88pa_ctrl_bcpwr(0);
-
 		/* Delay 1s to wait for mty065 ready */
 		mdelay(1000);
 	}
+
+	/* Power off the back camera after done */
+	atm88pa_ctrl_bcpwr(0);
 }
 
 int board_init(void)
