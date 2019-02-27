@@ -77,15 +77,15 @@
 			"sf erase 0x40000 0x500000; " \
 			"sf write ${image_load_addr} 0x40000 0x500000; " \
 		"fi; " \
-		"if fatload mmc 0 ${image_load_addr} u-boot.img; then " \
+		"if fatload mmc 0 ${image_load_addr} u-boot.bin; then " \
 			"sf erase 0x540000 0x80000; " \
 			"sf write ${image_load_addr} 0x540000 0x80000; " \
 		"fi; " \
-		"if fatload mmc 0 ${image_load_addr} u-boot-env.img; then " \
+		"if fatload mmc 0 ${image_load_addr} u-boot-env.bin; then " \
 			"sf erase 0x5C0000 0x40000; " \
 			"sf write ${image_load_addr} 0x5C0000 0x40000; " \
 		"fi; " \
-		"if fatload mmc 0 ${image_load_addr} zynq-mpcam-v1.dts; then " \
+		"if fatload mmc 0 ${image_load_addr} zynq-mpcam-v1.dtb; then " \
 			"sf erase 0x5E0000 0x20000; " \
 			"sf write ${image_load_addr} 0x5E0000 0x20000; " \
 		"fi; " \
