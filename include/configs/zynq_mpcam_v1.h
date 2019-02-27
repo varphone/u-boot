@@ -94,6 +94,7 @@
 			"sf write ${image_load_addr} 0x600000 0xA00000; " \
 			"setenv image_size ${filesize}; " \
 		"fi\0" \
+	"force_sdboot=yes\0" \
 	"sdboot=if mmcinfo; then " \
 			"run uenvboot; " \
 			"echo Copying FIT Image from SD to RAM ... && " \
@@ -106,7 +107,10 @@
 		"fi; " \
 		"usb stop\0" \
 	"modeboot=qspiboot\0" \
-	"bootcmd=run ${modeboot}\0"
+	"bootcmd=if test \"${force_sdboot}\" = \"yes\"; " \
+			"then run sdboot; " \
+			"else run ${modeboot}; " \
+		"fi\0"
 
 #endif /* __CONFIG_ZYNQ_MPCAM_V1_H */
 
