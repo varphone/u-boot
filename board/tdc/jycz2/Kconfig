@@ -1,0 +1,23 @@
+if TARGET_JYCZ2
+
+config SYS_BOARD
+	default "jycz2"
+
+config SYS_VENDOR
+	default "tdc"
+
+config SYS_CONFIG_NAME
+	default "jycz2"
+
+config SYS_TEXT_BASE
+	default 0x17800000
+
+config SYS_MMC_BOOT_DEV
+	int "Boot from which MMC dev-num"
+	default 1
+
+config SYS_MMC_BOOT_PART
+	int "Boot from which MMC part-num"
+	default 2
+
+endif
