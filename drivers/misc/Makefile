@@ -39,6 +39,7 @@ obj-$(CONFIG_SANDBOX) += syscon_sandbox.o
 obj-$(CONFIG_TWL4030_LED) += twl4030_led.o
 obj-$(CONFIG_FSL_IFC) += fsl_ifc.o
 obj-$(CONFIG_FSL_SEC_MON) += fsl_sec_mon.o
+obj-$(CONFIG_IMX_PWM) += imx_pwm.o
 obj-$(CONFIG_PCA9551_LED) += pca9551_led.o
 obj-$(CONFIG_RESET) += reset-uclass.o
 obj-$(CONFIG_FSL_DEVICE_DISABLE) += fsl_devdis.o

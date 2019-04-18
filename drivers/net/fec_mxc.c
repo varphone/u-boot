@@ -125,6 +125,7 @@ static int fec_mdio_read(struct ethernet_regs *eth, uint8_t phyAddr,
 	val = (unsigned short)readl(&eth->mii_data);
 	debug("%s: phy: %02x reg:%02x val:%#x\n", __func__, phyAddr,
 			regAddr, val);
+	udelay(1100);
 	return val;
 }
 
@@ -1101,7 +1102,7 @@ int fecmxc_initialize_multi(bd_t *bd, int dev_id, int phy_id, uint32_t addr)
 		return -2;
 	}
 #endif
-
+	udelay(1500);
 #ifdef CONFIG_MX28
 	/*
 	 * The i.MX28 has two ethernet interfaces, but they are not equal.

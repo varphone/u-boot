@@ -194,6 +194,7 @@ struct mxc_ccm_reg {
 	u32 reserved1[7];
 	/* For i.MX 6SoloLite */
 	u32 digprog_sololite;
+	u32 ana_misc2;		/* 0x4170 */
 };
 #endif
 
@@ -1244,6 +1245,11 @@ struct mxc_ccm_reg {
 #define BM_ANADIG_PLL_VIDEO_DENOM_B 0x3FFFFFFF
 #define BF_ANADIG_PLL_VIDEO_DENOM_B(v)  \
 	(((v) << 0) & BM_ANADIG_PLL_VIDEO_DENOM_B)
+    
+#define BP_ANADIG_ANA_MISC2_CONTROL3      30
+#define BM_ANADIG_ANA_MISC2_CONTROL3 0xC0000000
+#define BF_ANADIG_ANA_MISC2_CONTROL3(v) \
+	(((v) << 30) & BM_ANADIG_ANA_MISC2_CONTROL3)
 
 #define BM_ANADIG_PLL_ENET_LOCK 0x80000000
 #define BP_ANADIG_PLL_ENET_RSVD1      21

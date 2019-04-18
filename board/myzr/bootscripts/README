@@ -1,0 +1,26 @@
+
+#### MY-IMX6-A9 + Linux-3.0.35
+./tools/mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myzr bootscripts" -d board/myzr/bootscripts/myimx6a9_l3035_script.cmd my_environment.scr
+
+#### MY-IMX6-A9 + Linux-3.14.52
+./tools/mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myzr bootscripts" -d board/myzr/bootscripts/myimx6a9_l31452_script.cmd my_environment.scr
+
+#### MY-IMX6-A9 + Linux-4.1.15
+./tools/mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myzr bootscripts" -d board/myzr/bootscripts/myimx6a9_l4115_script.cmd my_environment.scr
+
+#### MY-IMX6-A9 + Linux-4.9.88
+./tools/mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myzr bootscripts" -d board/myzr/bootscripts/myimx6a9_l4988_script.cmd my_environment.scr
+
+
+
+#### MY-IMX6-A7(eMMC) + Linux-4.1.15
+./tools/mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myzr bootscripts" -d board/myzr/bootscripts/myimx6a7_l4115_emmc_script.cmd my_environment_emmc.scr
+
+#### MY-IMX6-A7(Nand) + Linux-4.1.15
+./tools/mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myzr bootscripts" -d board/myzr/bootscripts/myimx6a7_l4115_nand_script.cmd my_environment_nand.scr
+
+#### MY-IMX6-A7(eMMC) + Linux-4.9.88
+./tools/mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myzr bootscripts" -d board/myzr/bootscripts/myimx6a7_l4988_emmc_script.cmd my_environment_emmc.scr
+
+#### MY-IMX6-A7(Nand) + Linux-4.9.88
+./tools/mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myzr bootscripts" -d board/myzr/bootscripts/myimx6a7_l4988_nand_script.cmd my_environment_nand.scr

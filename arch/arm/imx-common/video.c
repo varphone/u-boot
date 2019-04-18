@@ -8,12 +8,25 @@
 #include <asm/errno.h>
 #include <asm/imx-common/video.h>
 
+#if (defined(CONFIG_TARGET_MYIMX6EK200) \
+	|| defined(CONFIG_TARGET_MYIMX6EK314) \
+	|| defined(CONFIG_TARGET_MYIMX6EK336))
+void my_panel_set(void);
+#endif
+
 int board_video_skip(void)
 {
 	int i;
 	int ret;
-	char const *panel = getenv("panel");
+	char const *panel;
 
+#if (defined(CONFIG_TARGET_MYIMX6EK200) \
+	|| defined(CONFIG_TARGET_MYIMX6EK314) \
+	|| defined(CONFIG_TARGET_MYIMX6EK336))
+	my_panel_set();
+#endif
+
+	panel = getenv("panel");
 	if (!panel) {
 		for (i = 0; i < display_count; i++) {
 			struct display_info_t const *dev = displays+i;

@@ -1,0 +1,32 @@
+
+if (TARGET_MYIMX6EK200 || TARGET_MYIMX6EK314 || TARGET_MYIMX6EK336)
+
+config SYS_BOARD
+	default "myimx6"
+
+config SYS_VENDOR
+	default "myzr"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "myimx6a9"
+	
+endif
+
+if (TARGET_MYIMX6EK140 || TARGET_MYIMX6EK140P)
+
+config SYS_BOARD
+	default "myimx6"
+
+config SYS_VENDOR
+	default "myzr"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "myimx6a7"
+	
+endif

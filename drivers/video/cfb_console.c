@@ -1930,8 +1930,6 @@ static void plot_logo_or_black(void *screen, int x, int y, int black)
 
 static void *video_logo(void)
 {
-	char info[128];
-	int space, len;
 	__maybe_unused int y_off = 0;
 	__maybe_unused ulong addr;
 	__maybe_unused char *s;
@@ -1977,6 +1975,10 @@ static void *video_logo(void)
 #endif
 	if (board_cfb_skip())
 		return 0;
+
+#ifndef CONFIG_VIDEO_SHOW_MY_LOGO
+	char info[128];
+	int space, len;
 
 	sprintf(info, " %s", version_string);
 
@@ -2043,6 +2045,7 @@ static void *video_logo(void)
 			}
 		}
 	}
+#endif
 #endif
 
 	return (video_fb_address + video_logo_height * VIDEO_LINE_LEN);

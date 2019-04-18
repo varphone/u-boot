@@ -80,6 +80,36 @@ config TARGET_MX6CUBOXI
 	bool "Solid-run mx6 boards"
 	select SUPPORT_SPL
 
+config TARGET_MYIMX6EK200
+	bool "Support myimx6ek200"
+	select SUPPORT_SPL
+	select DM
+	select DM_THERMAL
+
+config TARGET_MYIMX6EK314
+	bool "Support myimx6ek314"
+	select SUPPORT_SPL
+	select DM
+	select DM_THERMAL
+
+config TARGET_MYIMX6EK336
+	bool "Support myimx6ek336"
+	select SUPPORT_SPL
+	select DM
+	select DM_THERMAL
+
+config TARGET_MYIMX6EK140
+	bool "Support myimx6ek140"
+	select MX6UL
+	select DM
+	select DM_THERMAL
+
+config TARGET_MYIMX6EK140P
+	bool "Support myimx6ek140p"
+	select MX6UL
+	select DM
+	select DM_THERMAL
+
 config TARGET_MX6QARM2
 	bool "mx6qarm2"
 	select DM
@@ -251,6 +281,7 @@ source "board/boundary/nitrogen6x/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
 source "board/congatec/cgtqmx6eval/Kconfig"
 source "board/embest/mx6boards/Kconfig"
+source "board/myzr/myimx6/Kconfig"
 source "board/freescale/mx6qarm2/Kconfig"
 source "board/freescale/mx6qsabreauto/Kconfig"
 source "board/freescale/mx6sabresd/Kconfig"
