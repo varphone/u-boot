@@ -195,8 +195,8 @@
 #ifdef CONFIG_UBOOT_LOGO_ENABLE
 /* Select one of the output mode */
 /*#define IPU_OUTPUT_MODE_HDMI*/
-#define IPU_OUTPUT_MODE_LVDS
-/*#define IPU_OUTPUT_MODE_LCD*/
+/*#define IPU_OUTPUT_MODE_LVDS*/
+#define IPU_OUTPUT_MODE_LCD
 
 #define CONFIG_FB_BASE		(CONFIG_SYS_TEXT_BASE + 0x1000000)
 #define UBOOT_LOGO_BMP_ADDR	0x00100000
