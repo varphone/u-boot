@@ -67,13 +67,15 @@ struct lmb;
 #  endif
 # else
 #  define CONFIG_CRC32		/* FIT images need CRC32 support */
+#ifndef CONFIG_HISI_MC
 #  define CONFIG_MD5		/* and MD5 */
 #  define CONFIG_SHA1		/* and SHA1 */
 #  define CONFIG_SHA256		/* and SHA256 */
-#  define IMAGE_ENABLE_CRC32	1
 #  define IMAGE_ENABLE_MD5	1
 #  define IMAGE_ENABLE_SHA1	1
 #  define IMAGE_ENABLE_SHA256	1
+#endif
+#  define IMAGE_ENABLE_CRC32	1
 # endif
 
 #ifdef CONFIG_FIT_DISABLE_SHA256
@@ -164,6 +166,7 @@ enum {
 	IH_OS_OSE,			/* OSE		*/
 	IH_OS_PLAN9,			/* Plan 9	*/
 	IH_OS_OPENRTOS,		/* OpenRTOS	*/
+	IH_OS_TEE,			/* Trusted Execution Environment */
 
 	IH_OS_COUNT,
 };

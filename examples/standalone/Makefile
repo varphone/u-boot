@@ -23,14 +23,14 @@ ELF := $(strip $(extra-y))
 
 extra-y += $(addsuffix .srec,$(extra-y)) $(addsuffix .bin,$(extra-y))
 clean-files  := *.srec *.bin
-
+ifndef CONFIG_HISI_MC
 COBJS	:= $(ELF:=.o)
-
 LIB	= $(obj)/libstubs.o
+LIBOBJS-y += stubs.o
+endif
 
 LIBOBJS-$(CONFIG_PPC) += ppc_longjmp.o ppc_setjmp.o
 LIBOBJS-$(CONFIG_8xx) += test_burst_lib.o
-LIBOBJS-y += stubs.o
 
 .SECONDARY: $(call objectify,$(COBJS))
 targets += $(patsubst $(obj)/%,%,$(LIB)) $(COBJS) $(LIBOBJS-y)
