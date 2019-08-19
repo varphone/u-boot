@@ -255,6 +255,47 @@ static int __abortboot(int bootdelay)
 }
 # endif	/* CONFIG_AUTOBOOT_KEYED */
 
+#ifdef CONFIG_SHELL_LOGIN
+#ifndef CONFIG_SHELL_PWD
+#define CONFIG_SHELL_PWD "123456"
+#endif
+void shell_login(void)
+{
+	char pwd[64];
+	char c;
+	int index;
+	int locked = 1;
+	char *s;
+
+	s = getenv("shellpwd");
+	if (!s)
+		s = CONFIG_SHELL_PWD;
+
+	while (locked) {
+		puts("Input The Password: ");
+		index = 0;
+		while ((c = getc()) != '\r') {
+			if (c == 8) /* Backspace */
+			{
+				if (index > 0) {
+					printf("\b \b");
+					index--;
+				}
+				continue;
+			}
+			putc('*');
+			pwd[index] = c;
+			index++;
+		}
+		pwd[index] = '\0';
+		putc('\n');
+		if (!strcmp(pwd, s)) {
+			locked = 0;
+		}
+	}
+}
+#endif
+
 static int abortboot(int bootdelay)
 {
 	int abort = 0;
@@ -265,6 +306,11 @@ static int abortboot(int bootdelay)
 #ifdef CONFIG_SILENT_CONSOLE
 	if (abort)
 		gd->flags &= ~GD_FLG_SILENT;
+#endif
+
+#ifdef CONFIG_SHELL_LOGIN
+	if (abort)
+		shell_login();
 #endif
 
 	return abort;

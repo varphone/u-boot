@@ -413,4 +413,17 @@ config CMD_CREAD
 	help
 	 Enable the function for cycle read. 
 
+config SHELL_LOGIN
+	bool "Enable shell protection"
+	default n
+	help
+	  Enable ask password before enter the u-boot shell.
+
+config SHELL_PWD
+	string "Password of the shell"
+	default "123456"
+	depends on SHELL_LOGIN
+	help
+	  The password string for shell protection.
+
 source "common/spl/Kconfig"
