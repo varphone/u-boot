@@ -507,6 +507,69 @@ static int detect_mty065(struct display_info_t const *dev)
 
 	return ret;
 }
+#define CH7026_I2C_BUS	0
+#define CH7026_I2C_ADDR	0x76
+#define CH7025_DID 0x55
+#define CH7026_DID 0x54
+unsigned char REG_MAP_1024_576[ ][2] =
+{
+	{ 0x02, 0x01 },{ 0x02, 0x03 },{ 0x03, 0x00 },{ 0x04, 0x39 },{ 0x07, 0x18 },{ 0x0A, 0x10 },
+	{ 0x0C, 0x01 },{ 0x0D, 0x83 },{ 0x0E, 0xE4 },{ 0x0F, 0x24 },{ 0x10, 0x00 },{ 0x11, 0xA0 },
+	{ 0x12, 0x40 },{ 0x13, 0x30 },{ 0x14, 0x20 },{ 0x15, 0x12 },{ 0x16, 0x40 },{ 0x17, 0x51 },
+	{ 0x19, 0x03 },{ 0x1A, 0x05 },{ 0x1D, 0xC0 },{ 0x21, 0x12 },{ 0x22, 0x40 },{ 0x23, 0x71 },
+	{ 0x41, 0xE2 },{ 0x4D, 0x04 },{ 0x51, 0x54 },{ 0x52, 0x1B },{ 0x53, 0x1A },{ 0x55, 0xE5 },
+	{ 0x5E, 0x80 },{ 0x69, 0x60 },{ 0x77, 0x03 },{ 0x7D, 0x62 },{ 0x04, 0x38 },{ 0x06, 0x71 },
+	{ 0x03, 0x00 },{ 0x03, 0x00 },{ 0x03, 0x00 },{ 0x03, 0x00 },{ 0x03, 0x00 },
+	{ 0x06, 0x70 },{ 0x02, 0x02 },{ 0x02, 0x03 },{ 0x04, 0x00 },
+};
+#define REG_MAP_1024_576_LENGTH ( sizeof(REG_MAP_1024_576) / (2*sizeof(unsigned char)) )
+
+static void enable_ch7026(struct display_info_t const* dev)
+{
+
+	uint8_t buf[64];
+	unsigned int old_bus;
+	int regmap_length, i;
+	unsigned char *reg_map;
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(dev->bus);
+	if (i2c_read(CH7026_I2C_ADDR, 0x00, 1, buf, 1))
+	{	printf("ch7026 i2c_read error!");
+		return;
+	}
+	if ( (buf[0] != CH7025_DID ) && (buf[0] != CH7026_DID))
+	{	printf("ch7026 vendor ID error!");
+		return;
+	}
+	reg_map = (unsigned char *) REG_MAP_1024_576;
+	regmap_length = REG_MAP_1024_576_LENGTH;
+	for (i = 0 ; i < regmap_length ; i++ )
+		i2c_write(dev->addr, reg_map[2*i], 1, &reg_map[2*i+1], 1);
+	i2c_set_bus_num(old_bus);
+}
+
+/*
+ * Detect CH7026
+ * return 1 if found else 0
+ */
+static int detect_ch7026(struct display_info_t const *dev)
+{
+	int ret;
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(dev->bus);
+
+	ret = i2c_probe(dev->addr) == 0 ? 1 : 0;
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+
+	return ret;
+}
 
 #define ATM88PA_I2C_BUS		0
 #define ATM88PA_I2C_ADDR	0x7a
@@ -658,6 +721,26 @@ struct display_info_t const displays[] = {{
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 #endif
+} }, {
+	.bus	= CH7026_I2C_BUS,
+	.addr	= CH7026_I2C_ADDR,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= detect_ch7026,
+	.enable	= enable_ch7026,
+	.mode	= {
+		.name           = "CH7026-FWPAL",
+		.refresh        = 60,
+		.xres           = 1024,
+		.yres           = 576,
+		.pixclock       = 23738,
+		.left_margin    = 80,
+		.right_margin   = 48,
+		.upper_margin   = 9,
+		.lower_margin   = 3,
+		.hsync_len      = 32,
+		.vsync_len      = 5,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= MTY065_I2C_BUS,
 	.addr	= MTY065_I2C_ADDR,
