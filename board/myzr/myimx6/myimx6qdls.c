@@ -511,18 +511,19 @@ static int detect_mty065(struct display_info_t const *dev)
 #define CH7026_I2C_ADDR	0x76
 #define CH7025_DID 0x55
 #define CH7026_DID 0x54
-unsigned char REG_MAP_1024_576[ ][2] =
+
+unsigned char REG_MAP_720_576[ ][2] =
 {
-	{ 0x02, 0x01 },{ 0x02, 0x03 },{ 0x03, 0x00 },{ 0x04, 0x39 },{ 0x07, 0x18 },{ 0x0A, 0x10 },
-	{ 0x0C, 0x01 },{ 0x0D, 0x83 },{ 0x0E, 0xE4 },{ 0x0F, 0x24 },{ 0x10, 0x00 },{ 0x11, 0xA0 },
-	{ 0x12, 0x40 },{ 0x13, 0x30 },{ 0x14, 0x20 },{ 0x15, 0x12 },{ 0x16, 0x40 },{ 0x17, 0x51 },
-	{ 0x19, 0x03 },{ 0x1A, 0x05 },{ 0x1D, 0xC0 },{ 0x21, 0x12 },{ 0x22, 0x40 },{ 0x23, 0x71 },
-	{ 0x41, 0xE2 },{ 0x4D, 0x04 },{ 0x51, 0x54 },{ 0x52, 0x1B },{ 0x53, 0x1A },{ 0x55, 0xE5 },
-	{ 0x5E, 0x80 },{ 0x69, 0x60 },{ 0x77, 0x03 },{ 0x7D, 0x62 },{ 0x04, 0x38 },{ 0x06, 0x71 },
+	{ 0x02, 0x01 },{ 0x02, 0x03 },{ 0x03, 0x00 },{ 0x04, 0x39 },{ 0x07, 0x18 },{ 0x0A, 0x10 },{ 0x0D, 0x83 }, { 0x0C, 0x50 },
+	{ 0x0E, 0xE4 },{ 0x0F, 0x1A },{ 0x10, 0xD0 },{ 0x11, 0x60 },{ 0x12, 0x40 },{ 0x13, 0x0C },
+	{ 0x14, 0x40 },{ 0x15, 0x12 },{ 0x16, 0x40 },{ 0x17, 0x71 },{ 0x19, 0x05 },{ 0x1A, 0x05 },
+	{ 0x1D, 0xC0 },{ 0x21, 0x12 },{ 0x22, 0x40 },{ 0x23, 0x71 },{ 0x41, 0xE2 },{ 0x4D, 0x04 },
+	{ 0x51, 0x54 },{ 0x52, 0x1B },{ 0x53, 0x1A },{ 0x55, 0xE5 },{ 0x5C, 0x10 },{ 0x5E, 0x80 },
+	{ 0x77, 0x43 },{ 0x7D, 0x62 },{ 0x04, 0x38 },{ 0x06, 0x71 },
 	{ 0x03, 0x00 },{ 0x03, 0x00 },{ 0x03, 0x00 },{ 0x03, 0x00 },{ 0x03, 0x00 },
 	{ 0x06, 0x70 },{ 0x02, 0x02 },{ 0x02, 0x03 },{ 0x04, 0x00 },
 };
-#define REG_MAP_1024_576_LENGTH ( sizeof(REG_MAP_1024_576) / (2*sizeof(unsigned char)) )
+#define REG_MAP_720_576_LENGTH ( sizeof(REG_MAP_720_576) / (2*sizeof(unsigned char)) )
 
 static void enable_ch7026(struct display_info_t const* dev)
 {
@@ -542,8 +543,8 @@ static void enable_ch7026(struct display_info_t const* dev)
 	{	printf("ch7026 vendor ID error!");
 		return;
 	}
-	reg_map = (unsigned char *) REG_MAP_1024_576;
-	regmap_length = REG_MAP_1024_576_LENGTH;
+	reg_map = (unsigned char *) REG_MAP_720_576;
+	regmap_length = REG_MAP_720_576_LENGTH;
 	for (i = 0 ; i < regmap_length ; i++ )
 		i2c_write(dev->addr, reg_map[2*i], 1, &reg_map[2*i+1], 1);
 	i2c_set_bus_num(old_bus);
@@ -729,15 +730,15 @@ struct display_info_t const displays[] = {{
 	.enable	= enable_ch7026,
 	.mode	= {
 		.name           = "CH7026-FWPAL",
-		.refresh        = 60,
-		.xres           = 1024,
+		.refresh        = 50,
+		.xres           = 720,
 		.yres           = 576,
-		.pixclock       = 23738,
-		.left_margin    = 80,
-		.right_margin   = 48,
-		.upper_margin   = 9,
-		.lower_margin   = 3,
-		.hsync_len      = 32,
+		.pixclock       = 37037,
+		.left_margin    = 68,
+		.right_margin   = 2,
+		.upper_margin   = 39,
+		.lower_margin   = 5,
+		.hsync_len      = 74,
 		.vsync_len      = 5,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
@@ -749,15 +750,15 @@ struct display_info_t const displays[] = {{
 	.enable	= enable_mty065,
 	.mode	= {
 		.name           = "MTY065-720P",
-		.refresh        = 60,
-		.xres           = 1280,
-		.yres           = 720,
-		.pixclock       = 15619,
-		.left_margin    = 80,
-		.right_margin   = 48,
-		.upper_margin   = 13,
-		.lower_margin   = 3,
-		.hsync_len      = 32,
+		.refresh        = 50,
+		.xres           = 720,
+		.yres           = 576,
+		.pixclock       = 37037,
+		.left_margin    = 68,
+		.right_margin   = 2,
+		.upper_margin   = 39,
+		.lower_margin   = 5,
+		.hsync_len      = 74,
 		.vsync_len      = 5,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
