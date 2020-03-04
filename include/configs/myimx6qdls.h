@@ -321,7 +321,7 @@
 #define CONFIG_DISPLAY          "video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
 #define CONFIG_TFTPROOT         "cvr-mil-v2-w2/images/"
 #define PR_SPEC                 "-cm2-w2"
-#define CONFIG_VIDEO_LDB_CLK    42126700
+#define CONFIG_VIDEO_LDB_CLK    27000000
 #elif defined(CONFIG_PR_CVR_MIL_V2_A)
 #define CONFIG_DISPLAY		""
 #define CONFIG_TFTPROOT		"cvr-mil-v2-a/images/"
