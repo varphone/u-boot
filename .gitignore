@@ -84,3 +84,6 @@ GTAGS
 *.orig
 *~
 \#*#
+
+# Auto generated for hw_compressed
+/arch/arm/cpu/armv8/hi3559av100/hw_compressed/*.*
