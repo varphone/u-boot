@@ -205,8 +205,17 @@
  */
 
 /* Assume we boot with root on the seventh partition of eMMC */
+#if defined(CONFIG_PR_SPEC_JYCZ3)
+#define CONFIG_BOOTARGS "mem=256M console=ttyAMA0,115200n8 clk_ignore_unused root=/dev/mmcblk0p3 rootfstype=ext4 rw rootwait blkdevparts=mmcblk0:1M(u-boot.bin),15M(liteos),16M(kernel),96M(rootfs.ext4),1024M(data),-'"
+#define CONFIG_BOOTCOMMAND "mmc read 0 0x42000000 0x1000000 0x5000; bootm 0x42000000"
+#define CONFIG_IPADDR 192.168.1.123
+#define CONFIG_NETMASK 255.255.0.0
+#define CONFIG_GATEWAYIP 192.168.0.7
+#define CONFIG_SERVERIP 192.168.0.7
+#else
 #define CONFIG_BOOTARGS	"mem=256M console=ttyAMA0,115200n8"
 #define CONFIG_BOOTCOMMAND "bootm 0x42000000"
+#endif
 #define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS 2
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #define BOOT_TARGET_DEVICES(func) \
