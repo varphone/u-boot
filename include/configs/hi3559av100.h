@@ -205,8 +205,67 @@
  */
 
 /* Assume we boot with root on the seventh partition of eMMC */
+#if defined(CONFIG_PR_SPEC_JYCZ3)
+#if defined(CONFIG_EMMC)
+#define BOOTARGS_BASE \
+	"mem=256M console=ttyAMA0,115200n8 clk_ignore_unused"
+#define BOOTARGS_ROOTFS \
+	"root=/dev/mmcblk0p6 rootfstype=ext4 rw rootwait"
+#define BOOTARGS_PARTS \
+	"blkdevparts=mmcblk0:1M(u-boot),6M(logo),16M(liteos-a53),1M(liteos-m7),16M(linux),160M(rootfs),320M(app),64M(misc),16M(raw),512M(recovery),-(data)"
+#define BOOTARGS_EXTRA \
+	""
+#define CONFIG_BOOTARGS \
+	BOOTARGS_BASE " " \
+	BOOTARGS_ROOTFS " " \
+	BOOTARGS_PARTS " " \
+	BOOTARGS_EXTRA
+#define SHOW_LOGO_ENV \
+	"show_logo=startvo 0 32 10;\0"
+#define BOOT_LITEOS_A53_ENV \
+	"boot_liteos_53=mmc read 0 0x45000000 0x3800 0x4000; go_a53up 0x45000000;\0"
+#define BOOT_LITEOS_M7_ENV \
+	"boot_liteos_m7=config_m7; mmc read 0 0x42000000 0xB800 0x800; cp.b 0x42000000 0x19000000 0x100000; go_m7;\0"
+#define BOOT_LINUX_ENV \
+	"boot_linux=run set_bootargs; mmc read 0 0x42000000 0xC000 0x5000; bootm 0x42000000;\0"
+#define BOOTARGS_BASE_ENV "bootargs_base=" BOOTARGS_BASE "\0"
+#define BOOTARGS_ROOTFS_ENV "bootargs_rootfs=" BOOTARGS_ROOTFS "\0"
+#define BOOTARGS_PARTS_ENV "bootargs_parts=" BOOTARGS_PARTS "\0"
+#define BOOTARGS_EXTRA_ENV "bootargs_extra=" BOOTARGS_EXTRA "\0"
+#define SET_BOOTARGS_ENV \
+	"set_bootargs=setenv bootargs ${bootargs_base} ${bootargs_rootfs} ${bootargs_parts} ${bootargs_extra}\0"
+#endif
+#define CONFIG_IPADDR 192.168.1.123
+#define CONFIG_NETMASK 255.255.0.0
+#define CONFIG_GATEWAYIP 192.168.0.7
+#define CONFIG_SERVERIP 192.168.0.7
+#define CONFIG_BOOTCOMMAND \
+	"if test -n $show_logo; then " \
+		"run show_logo; " \
+	"fi; " \
+	"if test -n $boot_liteos_a53; then " \
+		"run boot_liteos_a53; " \
+	"fi; " \
+	"if test -n $boot_liteos_m7; then " \
+		"run boot_liteos_m7; " \
+	"fi; " \
+	"if test -n $boot_linux; then " \
+		"run boot_linux; " \
+	"fi;"
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	SHOW_LOGO_ENV \
+	BOOT_LITEOS_A53_ENV \
+	BOOT_LITEOS_M7_ENV \
+	BOOT_LINUX_ENV \
+	BOOTARGS_BASE_ENV \
+	BOOTARGS_ROOTFS_ENV \
+	BOOTARGS_PARTS_ENV \
+	BOOTARGS_EXTRA_ENV \
+	SET_BOOTARGS_ENV
+#else
 #define CONFIG_BOOTARGS "mem=256M console=ttyAMA0,115200n8"
 #define CONFIG_BOOTCOMMAND "bootm 0x42000000"
+#endif
 #define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS 2
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #define BOOT_TARGET_DEVICES(func) \
