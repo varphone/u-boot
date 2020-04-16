@@ -352,6 +352,7 @@ PYTHON		= python
 DTC		= dtc
 CHECK		= sparse
 
+HW_DIR		= hw_compressed
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void -D__CHECK_ENDIAN__ $(CF)
 
@@ -657,12 +658,14 @@ libs-$(CONFIG_FMAN_ENET) += drivers/net/fm/
 libs-$(CONFIG_SYS_FSL_DDR) += drivers/ddr/fsl/
 libs-$(CONFIG_SYS_FSL_MMDC) += drivers/ddr/fsl/
 libs-$(CONFIG_ALTERA_SDRAM) += drivers/ddr/altera/
+libs-y += drivers/ddr/hisilicon/$(SOC)/
 libs-y += drivers/serial/
 libs-y += drivers/usb/dwc3/
 libs-y += drivers/usb/common/
 libs-y += drivers/usb/emul/
 libs-y += drivers/usb/eth/
 libs-y += drivers/usb/gadget/
+libs-y += drivers/usb/gadget/hiudc3/
 libs-y += drivers/usb/gadget/udc/
 libs-y += drivers/usb/host/
 libs-y += drivers/usb/musb/
@@ -677,6 +680,44 @@ libs-y += test/
 libs-y += test/dm/
 libs-$(CONFIG_UT_ENV) += test/env/
 libs-$(CONFIG_UT_OVERLAY) += test/overlay/
+ifeq ($(CONFIG_AUDIO_ENABLE), y)
+#libs-y += product/hiaudio/acodec/v800/
+#libs-y += product/hiaudio/ao/hi3559av100/
+endif
+
+ifeq ($(CONFIG_OSD_ENABLE),y)
+# FOR DEC of all chip
+libs-y += product/hiosd/dec/
+
+# FOR VO,HDMI,MIPI_Tx of hi3559av100
+ifeq ($(CONFIG_PRODUCTNAME),"hi3559av100")
+libs-y += product/hiosd/vo/hi3559av100/
+libs-y += product/hiosd/mipi_tx/hi3559av100/
+libs-y += product/hiosd/hdmi/hi3559av100/drv/
+else ifeq ($(CONFIG_PRODUCTNAME),"hi3519av100")
+libs-y += product/hiosd/vo/hi3519av100/
+libs-y += product/hiosd/mipi_tx/hi3519av100/
+libs-y += product/hiosd/hdmi/hdmi_2_0/drv/
+else ifeq ($(CONFIG_PRODUCTNAME),"hi3516dv300")
+libs-y += product/hiosd/vo/hi3516cv500/
+libs-y += product/hiosd/mipi_tx/hi3559av100/
+libs-y += product/hiosd/hdmi/hdmi_2_0/drv/
+endif
+
+ifeq ($(CONFIG_PRODUCTNAME),$(filter $(CONFIG_PRODUCTNAME), "hi3516cv500" "hi3516dv300" "hi3519av100" "hi3556av100" "hi3559av100" "hi3556v200" "hi3559v200"))
+libs-y += product/hiotp/
+libs-y += product/cipher/
+endif
+
+endif
+
+ifeq ($(CONFIG_AUTO_UPDATE),y)
+libs-y += product/hiupdate/
+endif
+
+ifeq ($(CONFIG_I2C_HIBVT),y)
+libs-y += product/hii2c/
+endif
 
 libs-y += $(if $(BOARDDIR),board/$(BOARDDIR)/)
 
@@ -845,6 +886,17 @@ else
 u-boot.bin: u-boot-nodtb.bin FORCE
 	$(call if_changed,copy)
 endif
+
+.PHONY: u-boot-z.bin
+u-boot-z.bin: $(CURDIR)/u-boot.bin
+	make -C $(CURDIR)/arch/$(ARCH)/cpu/$(CPU)/$(SOC)/$(HW_DIR)/ \
+		CROSS_COMPILE=$(CROSS_COMPILE) \
+		BINIMAGE=$(CURDIR)/u-boot.bin TOPDIR=$(CURDIR)
+
+.PHONY: u-boot-z.clean
+u-boot-z.clean: $(CURDIR)/u-boot.bin
+	make -C $(CURDIR)/arch/$(ARCH)/cpu/$(CPU)/$(SOC)/$(HW_DIR) \
+		CROSS_COMPILE=$(CROSS_COMPILE) clean
 
 %.imx: %.bin
 	$(Q)$(MAKE) $(build)=arch/arm/imx-common $@

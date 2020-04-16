@@ -8,6 +8,9 @@ obj-$(CONFIG_$(SPL_)LED)	+= led/
 obj-$(CONFIG_$(SPL_)PINCTRL)	+= pinctrl/
 obj-$(CONFIG_$(SPL_)RAM)	+= ram/
 
+obj-$(CONFIG_UFS) += ufs/
+obj-$(CONFIG_GENERIC_PHY)   += phy/
+
 ifdef CONFIG_SPL_BUILD
 
 obj-$(CONFIG_SPL_CRYPTO_SUPPORT) += crypto/
@@ -71,6 +74,7 @@ obj-y += pcmcia/
 obj-y += dfu/
 obj-$(CONFIG_X86) += pch/
 obj-y += phy/marvell/
+obj-y += phy/hibvt/
 obj-y += rtc/
 obj-y += sound/
 obj-y += spmi/

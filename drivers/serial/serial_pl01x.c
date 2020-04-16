@@ -272,6 +272,13 @@ __weak struct serial_device *default_serial_console(void)
 
 #endif /* nCONFIG_DM_SERIAL */
 
+void serial_puts_to_hitool(const char *s)
+{
+	udc_puts(s);
+	while (*s)
+		pl01x_putc(base_regs, *s++);
+}
+
 #ifdef CONFIG_DM_SERIAL
 
 struct pl01x_priv {

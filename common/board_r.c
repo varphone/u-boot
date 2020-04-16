@@ -40,6 +40,7 @@
 #include <miiphy.h>
 #endif
 #include <mmc.h>
+#include <ufs.h>
 #include <nand.h>
 #include <onenand_uboot.h>
 #include <scsi.h>
@@ -66,6 +67,9 @@
 #include <asm/arch/mmu.h>
 #endif
 #include <efi_loader.h>
+#ifdef CONFIG_CMD_SF
+#include <spi_flash.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -431,6 +435,31 @@ static int initr_spi(void)
 }
 #endif
 
+#ifdef CONFIG_CMD_SF
+
+#ifndef CONFIG_ENV_SPI_BUS
+# define CONFIG_ENV_SPI_BUS 0
+#endif
+#ifndef CONFIG_ENV_SPI_CS
+# define CONFIG_ENV_SPI_CS  0
+#endif
+#ifndef CONFIG_ENV_SPI_MAX_HZ
+# define CONFIG_ENV_SPI_MAX_HZ  1000000
+#endif
+#ifndef CONFIG_ENV_SPI_MODE
+# define CONFIG_ENV_SPI_MODE    SPI_MODE_3
+#endif
+
+/* go init the SPI Nor */
+static int initr_snor(void)
+{
+	puts("SPI Nor:  ");
+	spi_flash_probe(CONFIG_ENV_SPI_BUS, CONFIG_ENV_SPI_CS,
+			CONFIG_ENV_SPI_MAX_HZ, CONFIG_ENV_SPI_MODE);
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_CMD_NAND
 /* go init the NAND */
 static int initr_nand(void)
@@ -456,6 +485,15 @@ static int initr_mmc(void)
 {
 	puts("MMC:   ");
 	mmc_initialize(gd->bd);
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_GENERIC_UFS
+static int initr_ufs(void)
+{
+	puts("UFS:   ");
+	ufs_storage_init();
 	return 0;
 }
 #endif
@@ -737,6 +775,14 @@ static int initr_kbd(void)
 }
 #endif
 
+static int initr_download(void)
+{
+	extern void download_boot(const int (*handle)(void));
+	download_boot(NULL);
+
+	return 0;
+}
+
 static int run_main_loop(void)
 {
 #ifdef CONFIG_SANDBOX
@@ -853,6 +899,9 @@ init_fnc_t init_sequence_r[] = {
 #ifdef CONFIG_PPC
 	initr_spi,
 #endif
+#ifdef CONFIG_CMD_SF
+	initr_snor,
+#endif
 #ifdef CONFIG_CMD_NAND
 	initr_nand,
 #endif
@@ -861,6 +910,9 @@ init_fnc_t init_sequence_r[] = {
 #endif
 #ifdef CONFIG_GENERIC_MMC
 	initr_mmc,
+#endif
+#ifdef CONFIG_GENERIC_UFS
+	initr_ufs,
 #endif
 #ifdef CONFIG_HAS_DATAFLASH
 	initr_dataflash,
@@ -969,6 +1021,8 @@ init_fnc_t init_sequence_r[] = {
 #if defined(CONFIG_SPARC)
 	prom_init,
 #endif
+	initr_download,
+
 	run_main_loop,
 };
 

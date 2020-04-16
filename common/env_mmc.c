@@ -22,12 +22,12 @@
 #error CONFIG_ENV_SIZE_REDUND should be the same as CONFIG_ENV_SIZE
 #endif
 
-char *env_name_spec = "MMC";
+char *mmc_env_name_spec = "MMC";
 
 #ifdef ENV_IS_EMBEDDED
 env_t *env_ptr = &environment;
 #else /* ! ENV_IS_EMBEDDED */
-env_t *env_ptr;
+extern env_t *env_ptr;
 #endif /* ENV_IS_EMBEDDED */
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -59,7 +59,7 @@ __weak int mmc_get_env_dev(void)
 	return CONFIG_SYS_MMC_ENV_DEV;
 }
 
-int env_init(void)
+int emmc_env_init(void)
 {
 	/* use default */
 	gd->env_addr	= (ulong)&default_environment[0];
@@ -142,7 +142,7 @@ static inline int write_env(struct mmc *mmc, unsigned long size,
 static unsigned char env_flags;
 #endif
 
-int saveenv(void)
+int emmc_saveenv(void)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(env_t, env_new, 1);
 	int dev = mmc_get_env_dev();
@@ -208,7 +208,7 @@ static inline int read_env(struct mmc *mmc, unsigned long size,
 }
 
 #ifdef CONFIG_ENV_OFFSET_REDUND
-void env_relocate_spec(void)
+void emmc_env_relocate_spec(void)
 {
 #if !defined(ENV_IS_EMBEDDED)
 	struct mmc *mmc;
@@ -296,7 +296,7 @@ err:
 #endif
 }
 #else /* ! CONFIG_ENV_OFFSET_REDUND */
-void env_relocate_spec(void)
+void emmc_env_relocate_spec(void)
 {
 #if !defined(ENV_IS_EMBEDDED)
 	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);

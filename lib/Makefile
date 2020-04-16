@@ -44,6 +44,8 @@ obj-$(CONFIG_BITREVERSE) += bitrev.o
 obj-y += list_sort.o
 endif
 
+obj-$(CONFIG_HWDEC) += hw_dec/
+
 obj-$(CONFIG_$(SPL_)RSA) += rsa/
 obj-$(CONFIG_$(SPL_)SHA1) += sha1.o
 obj-$(CONFIG_$(SPL_)SHA256) += sha256.o
@@ -96,5 +98,6 @@ else
 # Main U-Boot always uses the full printf support
 obj-y += vsprintf.o panic.o strto.o strmhz.o
 endif
+obj-$(CONFIG_CMD_NAND) +=match_table.o
 
 subdir-ccflags-$(CONFIG_CC_OPTIMIZE_LIBS_FOR_SPEED) += -O2

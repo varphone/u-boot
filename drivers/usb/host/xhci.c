@@ -30,6 +30,7 @@
 #include <asm/unaligned.h>
 #include <linux/errno.h>
 #include "xhci.h"
+#include "../drivers/phy/hibvt/usb_hisi.h"
 
 #ifndef CONFIG_USB_MAX_CONTROLLER_COUNT
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 1
@@ -957,6 +958,7 @@ static int _xhci_submit_control_msg(struct usb_device *udev, unsigned long pipe,
 	return xhci_ctrl_tx(udev, pipe, setup, length, buffer);
 }
 
+
 static int xhci_lowlevel_init(struct xhci_ctrl *ctrl)
 {
 	struct xhci_hccr *hccr;
@@ -1067,6 +1069,8 @@ int usb_lowlevel_init(int index, enum usb_init_type init, void **controller)
 	int ret;
 
 	*controller = NULL;
+
+	phy_hiusb_init(index);
 
 	if (xhci_hcd_init(index, &hccr, (struct xhci_hcor **)&hcor) != 0)
 		return -ENODEV;

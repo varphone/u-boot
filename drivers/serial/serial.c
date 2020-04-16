@@ -514,6 +514,7 @@ void serial_puts(const char *s)
 void default_serial_puts(const char *s)
 {
 	struct serial_device *dev = get_current();
+	udc_puts(s);
 	while (*s)
 		dev->putc(*s++);
 }
