@@ -1019,7 +1019,10 @@ int hdmi_display(unsigned int vosync, unsigned int input, unsigned int output)
     s32Ret = HI_DRV_HDMI_Open(HI_HDMI_ID_0);
     CHECK_FAILURE_RET(s32Ret);
 
-    stAttr.bEnableHdmi = HI_TRUE;
+    if (getenv_yesno("force_dvi") == 1)
+        stAttr.bEnableHdmi = HI_FALSE;
+    else
+        stAttr.bEnableHdmi = HI_TRUE;
     stAttr.u32DispFmt = vosync;
     stAttr.enVidOutMode = output;
     stAttr.enVidInMode = input;
