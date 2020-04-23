@@ -207,7 +207,11 @@
 /* Assume we boot with root on the seventh partition of eMMC */
 #if defined(CONFIG_PR_SPEC_JYCZ3)
 #if defined(CONFIG_EMMC)
-#define CONFIG_BOOTARGS "mem=256M console=ttyAMA0,115200n8 clk_ignore_unused root=/dev/mmcblk0p6 rootfstype=ext4 rw rootwait blkdevparts=mmcblk0:1M(u-boot),6M(logo),16M(liteos-a53),1M(liteos-m7),16M(linux),96M(rootfs),16M(config),1024M(data),-'"
+#define CONFIG_BOOTARGS \
+	"mem=256M console=ttyAMA0,115200n8 " \
+	"clk_ignore_unused " \
+	"root=/dev/mmcblk0p6 rootfstype=ext4 rw rootwait "\
+	"blkdevparts=mmcblk0:1M(u-boot),6M(logo),16M(liteos-a53),1M(liteos-m7),16M(linux),160M(rootfs),320M(app),64M(misc),16M(raw),512M(recovery),-(data)"
 #define SHOW_LOGO_ENV \
 	"show_logo=startvo 0 32 10;\0"
 #define BOOT_LITEOS_A53_ENV \
