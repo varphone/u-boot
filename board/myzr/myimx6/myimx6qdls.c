@@ -1195,8 +1195,29 @@ int pmic_init(void)
 }
 #endif
 
+#define ATM88PA_FC_PWR_CTRL_REG  0x0C /* R/W */
 #define ATM88PA_BC_PWR_CTRL_REG	 0x0D /* R/W */
+#define ATM88PA_LC_PWR_CTRL_REG  0x12 /* R/W */
+#define ATM88PA_RC_PWR_CTRL_REG  0x13 /* R/W */
 #define ATM88PA_FAULT_REG        0x0f
+
+static void atm88pa_ctrl_allcpwr(u8 ctrl)
+{
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(ATM88PA_I2C_BUS);
+
+	i2c_write(ATM88PA_I2C_ADDR, ATM88PA_FC_PWR_CTRL_REG, 1, &ctrl, 1);
+	i2c_write(ATM88PA_I2C_ADDR, ATM88PA_BC_PWR_CTRL_REG, 1, &ctrl, 1);
+	i2c_write(ATM88PA_I2C_ADDR, ATM88PA_LC_PWR_CTRL_REG, 1, &ctrl, 1);
+	i2c_write(ATM88PA_I2C_ADDR, ATM88PA_RC_PWR_CTRL_REG, 1, &ctrl, 1);
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+}
 
 static void atm88pa_ctrl_bcpwr(u8 ctrl)
 {
@@ -1350,6 +1371,9 @@ void board_video_pre_skip(void)
 
 	/* Power off the back camera after done */
 	atm88pa_ctrl_bcpwr(0);
+#if defined(CONFIG_PR_CVR_MIL_V2_MLC)
+	atm88pa_ctrl_bcpwr(1);
+#endif
 }
 
 int board_init(void)
@@ -1376,5 +1400,8 @@ int board_init(void)
 	setup_pcie();
 #endif
 
+#if defined(CONFIG_PR_CVR_MIL_V2_MLC)
+	atm88pa_ctrl_allcpwr(1);
+#endif
 	return 0;
 }
