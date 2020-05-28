@@ -577,9 +577,13 @@ static int detect_ch7026(struct display_info_t const *dev)
 #define ATM88PA_I2C_ADDR	0x7a
 
 #if !defined(CONFIG_PR_CVR_MIL_V2_MLC)
+/*
+   * Detect nlb084sv01l
+   * return 1 if found else 0
+*/
 static int detect_nlb084sv01l(struct display_info_t const* dev)
 {
-	return 1;
+	return 0;
 }
 
 static void enable_nlb084sv01l(struct display_info_t const* dev)
