@@ -532,6 +532,7 @@ static void enable_ch7026(struct display_info_t const* dev)
 	unsigned int old_bus;
 	int regmap_length, i;
 	unsigned char *reg_map;
+
 	/* Save old bus num */
 	old_bus = i2c_get_bus_num();
 	i2c_set_bus_num(dev->bus);
@@ -574,6 +575,13 @@ static int detect_ch7026(struct display_info_t const *dev)
 
 #define ATM88PA_I2C_BUS		0
 #define ATM88PA_I2C_ADDR	0x7a
+
+#if !defined(CONFIG_PR_CVR_MIL_V2_MLC)
+static int detect_nlb084sv01l(struct display_info_t const* dev)
+{
+	return 1;
+}
+
 static void enable_nlb084sv01l(struct display_info_t const* dev)
 {
 	uint8_t buf[64];
@@ -598,6 +606,40 @@ static void enable_nlb084sv01l(struct display_info_t const* dev)
 	/* Restore old bus num */
 	i2c_set_bus_num(old_bus);
 }
+#endif
+
+#if defined(CONFIG_PR_CVR_MIL_V2_MLC)
+static int detect_nlb084sv01l(struct display_info_t const* dev)
+{
+	int ret;
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(dev->bus);
+	ret = i2c_probe(dev->addr) == 0 ? 1 : 0;
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+	return ret;
+}
+
+static void enable_nlb084sv01l(struct display_info_t const* dev)
+{
+	uint8_t buf[64];
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(dev->bus);
+	buf[0] = 1; /* Power on */
+	i2c_write(dev->addr, 0x0c, 1, buf, 1);
+	i2c_write(dev->addr, 0x0d, 1, buf, 1);
+	i2c_write(dev->addr, 0x12, 1, buf, 1);
+	i2c_write(dev->addr, 0x13, 1, buf, 1);
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+}
+#endif
 
 #define ADV739X_I2C_BUS     0
 #define ADV739X_I2C_ADDR    0x2b
@@ -786,7 +828,7 @@ struct display_info_t const displays[] = {{
 	.bus	= ATM88PA_I2C_BUS,
 	.addr	= ATM88PA_I2C_ADDR,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= NULL,
+	.detect	= detect_nlb084sv01l,
 	.enable	= enable_nlb084sv01l,
 	.mode	= {
 		.name           = "NLB084SV01L",
