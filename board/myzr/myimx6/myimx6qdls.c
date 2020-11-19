@@ -1166,9 +1166,6 @@ int board_late_init(void)
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
-#if defined(CONFIG_VIDEO_IPUV3)
-	setup_display();
-#endif
 
 	return 0;
 }
@@ -1378,6 +1375,10 @@ void board_video_pre_skip(void)
 
 int board_init(void)
 {
+#if defined(CONFIG_VIDEO_IPUV3)
+	setup_display();
+#endif
+
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 	
 #if defined(CONFIG_MYIMX6CB336)
