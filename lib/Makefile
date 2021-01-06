@@ -16,11 +16,14 @@ obj-$(CONFIG_BZIP2) += bzip2/
 obj-$(CONFIG_TIZEN) += tizen/
 obj-$(CONFIG_FIT) += libfdt/
 obj-$(CONFIG_CMD_DHRYSTONE) += dhry/
+obj-$(CONFIG_OPTEE) += optee/
 
 obj-$(CONFIG_AES) += aes.o
 obj-$(CONFIG_USB_TTY) += circbuf.o
+ifndef CONFIG_HISI_MC
 obj-y += crc7.o
 obj-y += crc8.o
+endif
 obj-y += crc16.o
 obj-$(CONFIG_ERRNO_STR) += errno_str.o
 obj-$(CONFIG_FIT) += fdtdec_common.o
@@ -32,7 +35,9 @@ obj-y += initcall.o
 obj-$(CONFIG_LMB) += lmb.o
 obj-y += ldiv.o
 obj-$(CONFIG_LZ4) += lz4_wrapper.o
+ifndef CONFIG_HISI_MC
 obj-$(CONFIG_MD5) += md5.o
+endif
 obj-y += net_utils.o
 obj-$(CONFIG_PHYSMEM) += physmem.o
 obj-y += qsort.o
@@ -44,10 +49,13 @@ obj-$(CONFIG_BITREVERSE) += bitrev.o
 obj-y += list_sort.o
 endif
 
+obj-$(CONFIG_HWDEC) += hw_dec/
+
 obj-$(CONFIG_$(SPL_)RSA) += rsa/
+ifndef CONFIG_HISI_MC
 obj-$(CONFIG_$(SPL_)SHA1) += sha1.o
 obj-$(CONFIG_$(SPL_)SHA256) += sha256.o
-
+endif
 obj-$(CONFIG_SPL_SAVEENV) += qsort.o
 obj-$(CONFIG_$(SPL_)OF_LIBFDT) += libfdt/
 ifneq ($(CONFIG_SPL_BUILD)$(CONFIG_SPL_OF_PLATDATA),yy)
@@ -94,7 +102,11 @@ obj-$(SERIAL_SUPPORT) += vsprintf.o panic.o strto.o strmhz.o
 endif
 else
 # Main U-Boot always uses the full printf support
+#ifndef CONFIG_MINI_BOOT
 obj-y += vsprintf.o panic.o strto.o strmhz.o
+#endif
+
 endif
+obj-$(CONFIG_CMD_NAND) +=match_table.o
 
 subdir-ccflags-$(CONFIG_CC_OPTIMIZE_LIBS_FOR_SPEED) += -O2
