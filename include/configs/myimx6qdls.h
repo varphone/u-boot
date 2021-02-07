@@ -353,6 +353,12 @@
 #define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
 #define CONFIG_TFTPROOT		"cvr-mil-v3/images/"
 #define PR_SPEC			"-cm3"
+#elif defined(CONFIG_PR_JYCZ2_BJS)
+#define CONFIG_DISPLAY		"video=mxcfb0:dev=ldb,if=RGB666,bpp=32 ldb=sin1"
+#define CONFIG_TFTPROOT		"jycz2-bjs/images/"
+#define PR_SPEC			"-cm2-bjs"
+#define CONFIG_PANEL		"NLB084SV01L"
+#define CONFIG_VIDEO_LDB_CLK	35596800
 #else
 #define CONFIG_DISPLAY
 #define CONFIG_TFTPROOT
