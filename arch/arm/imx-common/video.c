@@ -34,6 +34,7 @@ int board_video_skip(void)
 	}
 
 	if (i < display_count) {
+		mdelay(10);
 		ret = ipuv3_fb_init(&displays[i].mode, 0,
 				    displays[i].pixfmt);
 		if (!ret) {
