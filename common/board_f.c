@@ -56,7 +56,7 @@
 #endif
 #include <dm/root.h>
 #include <linux/compiler.h>
-
+#include <libfdt.h>
 /*
  * Pointer to initial global data area
  *
@@ -69,6 +69,8 @@ DECLARE_GLOBAL_DATA_PTR = (gd_t *) (CONFIG_SYS_INIT_GD_ADDR);
 #else
 DECLARE_GLOBAL_DATA_PTR;
 #endif
+
+int g_mem_size;
 
 /*
  * sjg: IMO this code should be
@@ -222,6 +224,11 @@ static int show_dram_config(void)
 	board_add_ram_info(0);
 	putc('\n');
 
+
+       //rpdzkj
+       g_mem_size = (int)(size/1000000000);
+       printf("rpdzkj mem size : %d\n",g_mem_size);
+
 #if defined(CONFIG_SYS_MEM_TOP_HIDE)
 	if ((gd->bd->bi_dram[0].size+CONFIG_SYS_MEM_TOP_HIDE) > (0xE0000000UL)) {
 		gd->bd->bi_dram[0].size = 0xE0000000UL - CONFIG_SYS_MEM_TOP_HIDE;
@@ -232,6 +239,14 @@ static int show_dram_config(void)
 	}
 #endif
 	return 0;
+}
+
+
+int rp_get_mem_size_func(void){
+    show_dram_config();
+    if(g_mem_size >= 3)
+        g_mem_size = 4;
+    return g_mem_size;
 }
 
 __weak void dram_init_banksize(void)

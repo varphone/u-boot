@@ -43,6 +43,9 @@
 #define SECUESTORAGE_HEAD_SIZE		(256)
 #define SECUESTORAGE_WHOLE_SIZE		(0x40000)
 
+extern int g_mem_size;
+extern int rp_get_mem_size_func(void);
+
 struct storagekey_info_t {
 	uint8_t * buffer;
 	uint32_t size;
@@ -104,6 +107,22 @@ int32_t amlkey_init(uint8_t *seed, uint32_t len, int encrypt_type)
 		ret = -1;
 		goto _out;
 	}
+
+       printf("\ng_mem_size %d\n\n",rp_get_mem_size_func());
+       if (g_mem_size > 2){
+               printf("------------DRAM : 4G\n");
+               run_command("fdt address $dtb_mem_addr", 0);
+               run_command("fdt set /memory linux,usable-memory <0x0 0x0 0x0 0xF0000000>", 0);
+       } else if (g_mem_size > 1 ){
+               printf("------------DRAM : 2G\n");
+               run_command("fdt address $dtb_mem_addr", 0);
+               run_command("fdt set /memory linux,usable-memory <0x0 0x0 0x0 0x80000000>", 0);
+       } else {
+        	printf("------------DRAM : 1G\n");
+        	run_command("fdt address $dtb_mem_addr", 0);
+        	run_command("fdt set /memory linux,usable-memory <0x0 0x0 0x0 0x40000000>", 0);
+    }
+
 
 #ifdef CONFIG_STORE_COMPATIBLE
 	info_disprotect &= ~DISPROTECT_KEY;  //protect
