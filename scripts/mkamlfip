@@ -1,0 +1,105 @@
+#!/bin/bash
+
+if test -n "$KBUILD_SRC"; then
+	UBOOTDIR=${KBUILD_SRC}
+else
+	UBOOTDIR=${PWD}
+fi
+
+if test -n "$buildtree"; then
+	source "${buildtree}/.config"
+else
+	source $UBOOTDIR/build/.config
+fi
+
+FIPDIR="${UBOOTDIR}/.fip_tmp"
+
+case $CONFIG_SYS_BOARD in
+	"qx1")
+		FIP_TARGET=g12b
+		FIP_ENPROG=$UBOOTDIR/fip/g12b/aml_encrypt_g12b
+		;;
+	*)
+		echo "Unsupported board: ${CONFIG_SYS_BOARD}"
+		exit 1
+		;;
+esac
+
+echo "Packaging Amlogic Firmware Image ..."
+
+mkdir -p $FIPDIR
+
+cp $UBOOTDIR/build/scp_task/bl301.bin $FIPDIR/
+cp $UBOOTDIR/build/board/$CONFIG_SYS_VENDOR/$CONFIG_SYS_BOARD/firmware/acs.bin $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/bl2.bin $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/bl30.bin $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/bl31.img $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/ddr3_1d.fw $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/ddr4_1d.fw $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/ddr4_2d.fw $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/diag_lpddr4.fw $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/lpddr3_1d.fw $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/lpddr4_1d.fw $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/lpddr4_2d.fw $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/piei.fw $FIPDIR/
+cp $UBOOTDIR/fip/$FIP_TARGET/aml_ddr.fw $FIPDIR/
+cp $UBOOTDIR/build/u-boot.bin $FIPDIR/bl33.bin
+
+bash $UBOOTDIR/fip/blx_fix.sh \
+	$FIPDIR/bl30.bin \
+	$FIPDIR/zero_tmp \
+	$FIPDIR/bl30_zero.bin \
+	$FIPDIR/bl301.bin \
+	$FIPDIR/bl301_zero.bin \
+	$FIPDIR/bl30_new.bin \
+	bl30
+
+bash $UBOOTDIR/fip/blx_fix.sh \
+	$FIPDIR/bl2.bin \
+	$FIPDIR/zero_tmp \
+	$FIPDIR/bl2_zero.bin \
+	$FIPDIR/acs.bin \
+	$FIPDIR/bl21_zero.bin \
+	$FIPDIR/bl2_new.bin \
+	bl2
+
+$FIP_ENPROG --bl30sig --input $FIPDIR/bl30_new.bin \
+	--output $FIPDIR/bl30_new.bin.g12a.enc \
+	--level v3
+
+$FIP_ENPROG --bl3sig --input $FIPDIR/bl30_new.bin.g12a.enc \
+	--output $FIPDIR/bl30_new.bin.enc \
+	--level v3 --type bl30
+
+$FIP_ENPROG --bl3sig --input $FIPDIR/bl31.img \
+	--output $FIPDIR/bl31.img.enc \
+	--level v3 --type bl31
+
+$FIP_ENPROG --bl3sig --input $FIPDIR/bl33.bin --compress lz4 \
+	--output $FIPDIR/bl33.bin.enc \
+	--level v3 --type bl33 --compress lz4
+
+$FIP_ENPROG --bl2sig --input $FIPDIR/bl2_new.bin \
+	--output $FIPDIR/bl2.n.bin.sig
+
+$FIP_ENPROG --bootmk \
+	--output $FIPDIR/u-boot.bin \
+	--bl2 $FIPDIR/bl2.n.bin.sig \
+	--bl30 $FIPDIR/bl30_new.bin.enc \
+	--bl31 $FIPDIR/bl31.img.enc \
+	--bl33 $FIPDIR/bl33.bin.enc \
+	--ddrfw1 $FIPDIR/ddr4_1d.fw \
+	--ddrfw2 $FIPDIR/ddr4_2d.fw \
+	--ddrfw3 $FIPDIR/ddr3_1d.fw \
+	--ddrfw4 $FIPDIR/piei.fw \
+	--ddrfw5 $FIPDIR/lpddr4_1d.fw \
+	--ddrfw6 $FIPDIR/lpddr4_2d.fw \
+	--ddrfw7 $FIPDIR/diag_lpddr4.fw \
+	--ddrfw8 $FIPDIR/aml_ddr.fw \
+	--ddrfw9 $FIPDIR/lpddr3_1d.fw \
+	--level v3
+
+cp $FIPDIR/u-boot.bin* $UBOOTDIR/
+rm -rf "$FIPDIR"
+
+echo "Package Amlogic Firmware Image Done!"
