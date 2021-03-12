@@ -1,0 +1,7 @@
+config VAXPL_QX1
+	bool "Support Vaxpl QX1 board"
+	default n
+
+if VAXPL_QX1
+source "board/vaxpl/qx1/Kconfig"
+endif

@@ -80,6 +80,9 @@ config_file=$(shell echo "$(srctree)/customer/board/configs/$(CONFIG_SYS_BOARD).
 
 # 4th. this is khadas config folder
 config_file=$(shell echo "$(srctree)/board/khadas/configs/$(CONFIG_SYS_BOARD).h")
+
+# 5th. this is vaxpl config folder
+config_file=$(shell echo "$(srctree)/board/vaxpl/configs/$(CONFIG_SYS_BOARD).h")
 ifneq ($(config_file), $(wildcard $(config_file)))
 $(error $(shell echo "Error: Can not find $(CONFIG_SYS_BOARD).h"))
 endif
