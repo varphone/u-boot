@@ -760,6 +760,8 @@ ifneq ($(CONFIG_BUILD_TARGET),)
 ALL-y += $(CONFIG_BUILD_TARGET:"%"=%)
 endif
 
+ALL-$(CONFIG_VAXPL_QX1) += mkamlfip
+
 LDFLAGS_u-boot += $(LDFLAGS_FINAL)
 ifneq ($(CONFIG_SYS_TEXT_BASE),)
 LDFLAGS_u-boot += -Ttext $(CONFIG_SYS_TEXT_BASE)
@@ -1533,6 +1535,14 @@ endif
 # Usage:
 # $(Q)$(MAKE) $(clean)=dir
 clean := -f $(srctree)/scripts/Makefile.clean obj
+
+# Build Amlogic Firmware Image Pacakge
+ifeq ($(CONFIG_NEED_BL301),y)
+mkamlfip_deps = bl301.bin
+endif
+
+mkamlfip: $(mkamlfip_deps)
+	$(KBUILD_SRC)/scripts/mkamlfip
 
 endif	# skip-makefile
 
