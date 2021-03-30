@@ -446,6 +446,13 @@ static void enable_mty065(struct display_info_t const* dev)
 	 * Set display size
 	 * must be after the image crop
 	 */
+#if defined(CONFIG_PR_CVR_MIL_V2_NMTY)
+	buf[0] = 854 & 0xff;
+	buf[1] = (854 & 0xff00) >> 8;
+	buf[2] = 480 & 0xff;
+	buf[3] = (480 & 0xff00) >> 8;
+	i2c_write(dev->addr, 0x12, 1, buf, 4);
+#else
 	buf[0] = 854 & 0xff;
 	buf[1] = (854 & 0xff00) >> 8;
 	buf[2] = 480 & 0xff;
@@ -456,6 +463,7 @@ static void enable_mty065(struct display_info_t const* dev)
 	buf[7] = (dev->mode.yres & 0xff00) >> 8;
 	i2c_write(dev->addr, 0x12, 1, buf, 8);
 
+#endif
 	/* Set external video source format */
 	buf[0] = 0x41; /* RGB666, 18 bits */
 	i2c_write(dev->addr, 0x07, 1, buf, 1);
@@ -467,6 +475,9 @@ static void enable_mty065(struct display_info_t const* dev)
 	buf[0] = 0x00; /* external */
 	i2c_write(dev->addr, 0x05, 1, buf, 1);
 
+#if defined(CONFIG_PR_CVR_MIL_V2_NMTY)
+
+#else
 	/* Clear test pattern */
 	buf[0] = 0x00;
 	buf[1] = 0x00;
@@ -475,6 +486,7 @@ static void enable_mty065(struct display_info_t const* dev)
 	buf[4] = 0x00;
 	buf[5] = 0x00;
 	i2c_write(dev->addr, 0x0b, 1, buf, 6);
+#endif
 
 	/* Unfreeze */
 	buf[0] = 0x00;
@@ -1348,6 +1360,165 @@ static void wait_for_mty065_ready(int bus)
 	printf("The MTY065 heating was complete!\n");
 }
 
+#if defined(CONFIG_PR_CVR_MIL_V2_NMTY)
+
+#define LM75ADP_I2C_ADDR				0x48
+#define LM75ADP_TEMPER_REG				0x00
+
+#define PCA9557PW_I2C_ADDR				0x18
+#define PCA9557PW_INPUT_PORT_REG		0x00
+#define PCA9557PW_OUTPUT_PORT_REG		0x01
+#define PCA9557PW_POLARITY_REG			0x02
+#define PCA9557PW_CONFIG_REG			0x03
+
+#define PCA9557PW_CONFIG_VAL			0x78
+
+/* Detect the heater module of the mty065x_lm75adp
+ * return true or false
+ */
+static int detect_lm75adp_heater(int bus)
+{
+	int ret;
+	unsigned int old_bus;
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(bus);
+
+	ret = i2c_probe(LM75ADP_I2C_ADDR) == 0 ? 1 : 0;
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+
+	return ret;
+}
+
+static void set_mty065_heater_power_on(int status)
+{
+	u8 pin;
+	unsigned int old_bus;
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(MTY065_I2C_BUS);
+
+	i2c_read(PCA9557PW_I2C_ADDR, PCA9557PW_OUTPUT_PORT_REG, 1, &pin, 1);
+	if (status)
+		pin &= 0xfe;
+	else
+		pin |= 0x01;
+	i2c_write(PCA9557PW_I2C_ADDR, PCA9557PW_OUTPUT_PORT_REG, 1, &pin, 1);
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+}
+
+static void wait_for_mty065_lm75adp_ready(int bus)
+{
+	int ret;
+	// u16 temperature;
+	s8 temper[2];
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(bus);
+	while (1) {
+		ret  = i2c_read(LM75ADP_I2C_ADDR,
+		                LM75ADP_TEMPER_REG, 1, (u8*)temper, 2);
+		if (ret != 0) {
+			printf("Error: Read LM75ADP temperature registers failed, ret = %d\n", ret);
+			break;
+		}
+
+		if (temper[0] > -20) {
+			set_mty065_heater_power_on(0);
+			printf("The MTY065-B marked \"Working\", Current: %d ℃\n", temper[0]);
+			break;
+		}
+		else {
+			set_mty065_heater_power_on(1);
+		}
+
+		/* Blink the power led */
+		atm88pa_toggle_power_led_state();
+		printf("The MTY065-B is Warming-Up, Current: %d ℃\n", temper[0]);
+		mdelay(1000);
+	}
+
+	/* Reset the power led */
+	atm88pa_set_power_led_state(0);
+
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+
+	printf("The MTY065-B heating was complete!\n");
+}
+
+static int init_pca9557pw(void)
+{
+	int ret;
+	u8 state = PCA9557PW_CONFIG_VAL;
+	u8 polarity = 0x00;
+	u8 pin = 0x03;
+	unsigned int old_bus;
+
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(MTY065_I2C_BUS);
+	ret = i2c_write(PCA9557PW_I2C_ADDR, PCA9557PW_POLARITY_REG, 1, &polarity, 1);
+	/* The pca9306 and the fpf2700 are power off */
+	/* Stop heater and disconnect mty065 */
+	ret |= i2c_write(PCA9557PW_I2C_ADDR, PCA9557PW_OUTPUT_PORT_REG, 1, &pin, 1);
+	/* Configures the directions of the I/O pins */
+	ret = i2c_write(PCA9557PW_I2C_ADDR, PCA9557PW_CONFIG_REG, 1, &state, 1);
+
+	mdelay(200);
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+	return ret;
+}
+
+static void set_mty065_power_on()
+{
+	u8 pin;
+	unsigned int old_bus;
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(MTY065_I2C_BUS);
+
+	i2c_read(PCA9557PW_I2C_ADDR, PCA9557PW_OUTPUT_PORT_REG, 1, &pin, 1);
+	/* The nmty065 is power on */
+	pin &= 0xfd;
+	i2c_write(PCA9557PW_I2C_ADDR, PCA9557PW_OUTPUT_PORT_REG, 1, &pin, 1);
+	mdelay(200);
+	/* enabled the nmty065 */
+	pin |= 0x80;
+	i2c_write(PCA9557PW_I2C_ADDR, PCA9557PW_OUTPUT_PORT_REG, 1, &pin, 1);
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+}
+
+static void set_mty065_i2c_enabled()
+{
+	u8 pin;
+	unsigned int old_bus;
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(MTY065_I2C_BUS);
+	i2c_read(PCA9557PW_I2C_ADDR, PCA9557PW_OUTPUT_PORT_REG, 1, &pin, 1);
+	/* Delay 100ms to wait for mty065 i2c enabled */
+	/* connect i2c bus of  mty065 */
+	pin |= 0x04;
+	i2c_write(PCA9557PW_I2C_ADDR, PCA9557PW_OUTPUT_PORT_REG, 1, &pin, 1);
+	mdelay(100);
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+}
+
+#endif
+
 /* Hooking before the board_video_skip() */
 void board_video_pre_skip(void)
 {
@@ -1368,6 +1539,26 @@ void board_video_pre_skip(void)
 		/* Delay 1s to wait for mty065 ready */
 		mdelay(1000);
 	}
+
+#if defined(CONFIG_PR_CVR_MIL_V2_NMTY)
+	/* To detect the heater on mty065x_lm75adp and
+	 * Wait for the temperature is ready for working */
+	if(detect_lm75adp_heater(MTY065_I2C_BUS)) {
+		printf("The MTY065_LM75ADP heater detected.\n");
+
+		/* init GPIO, stop heater and disconnect mty065 */
+		init_pca9557pw();
+
+		/* Wait for warm up */
+		wait_for_mty065_lm75adp_ready(MTY065_I2C_BUS);
+
+		/* Power on the mty065 */
+		set_mty065_power_on();
+		/* Delay 1s to wait for mty065 ready */
+		mdelay(1000);
+		set_mty065_i2c_enabled();
+	}
+#endif
 
 	/* Power off the back camera after done */
 	atm88pa_ctrl_bcpwr(0);
