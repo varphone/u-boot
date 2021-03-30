@@ -446,7 +446,7 @@ static void enable_mty065(struct display_info_t const* dev)
 	 * Set display size
 	 * must be after the image crop
 	 */
-#if defined(CONFIG_PR_CVR_MIL_V2_NMTY)
+#if defined(CONFIG_PR_JYCZ2_TY2)
 	buf[0] = 854 & 0xff;
 	buf[1] = (854 & 0xff00) >> 8;
 	buf[2] = 480 & 0xff;
@@ -475,7 +475,7 @@ static void enable_mty065(struct display_info_t const* dev)
 	buf[0] = 0x00; /* external */
 	i2c_write(dev->addr, 0x05, 1, buf, 1);
 
-#if defined(CONFIG_PR_CVR_MIL_V2_NMTY)
+#if defined(CONFIG_PR_JYCZ2_TY2)
 
 #else
 	/* Clear test pattern */
@@ -1360,7 +1360,7 @@ static void wait_for_mty065_ready(int bus)
 	printf("The MTY065 heating was complete!\n");
 }
 
-#if defined(CONFIG_PR_CVR_MIL_V2_NMTY)
+#if defined(CONFIG_PR_JYCZ2_TY2)
 
 #define LM75ADP_I2C_ADDR				0x48
 #define LM75ADP_TEMPER_REG				0x00
@@ -1540,7 +1540,7 @@ void board_video_pre_skip(void)
 		mdelay(1000);
 	}
 
-#if defined(CONFIG_PR_CVR_MIL_V2_NMTY)
+#if defined(CONFIG_PR_JYCZ2_TY2)
 	/* To detect the heater on mty065x_lm75adp and
 	 * Wait for the temperature is ready for working */
 	if(detect_lm75adp_heater(MTY065_I2C_BUS)) {
