@@ -86,11 +86,11 @@
         "upgrade_step=0\0"\
         "jtag=disable\0"\
         "loadaddr=1080000\0"\
-        "panel_type=lcd_2\0" \
+        "panel_type=\0" \
         "lcd_ctrl=0x00000000\0" \
         "outputmode=1080p60hz\0" \
         "hdmimode=1080p60hz\0" \
-	    "colorattribute=444,8bit\0"\
+        "colorattribute=444,8bit\0"\
         "cvbsmode=576cvbs\0" \
         "display_width=1920\0" \
         "display_height=1080\0" \
@@ -515,9 +515,9 @@
 #define CONFIG_AML_CVBS 1
 #endif
 
-#define CONFIG_AML_LCD    1
-#define CONFIG_AML_LCD_TABLET 1
-#define CONFIG_AML_LCD_EXTERN 1
+//#define CONFIG_AML_LCD    1
+//#define CONFIG_AML_LCD_TABLET 1
+//#define CONFIG_AML_LCD_EXTERN 1
 
 
 /* USB
