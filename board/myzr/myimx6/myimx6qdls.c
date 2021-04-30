@@ -1412,7 +1412,7 @@ static void set_mty065_heater_power_on(int status)
 	i2c_set_bus_num(old_bus);
 }
 
-static void heaterCtl(s8 temper, s8 standard)
+static void mty065_heater_control(s8 temper, s8 standard)
 {
 	if (temper > standard) {
 		set_mty065_heater_power_on(0);	//停止加热
@@ -1422,7 +1422,7 @@ static void heaterCtl(s8 temper, s8 standard)
 	}
 }
 
-static void heaterProcess(int bus)
+static void mty065_heater_process(int bus)
 {
 	int ret;
 	s8 temper[2];
@@ -1440,19 +1440,19 @@ static void heaterProcess(int bus)
 			break;
 		}
 		if (time < 120) {
-			heaterCtl(temper[0], -10);
+			mty065_heater_control(temper[0], -10);
 		}
 		else if (time < 240) {
-			heaterCtl(temper[0], 0);
+			mty065_heater_control(temper[0], 0);
 		}
 		else if (time < 360) {
-			heaterCtl(temper[0], 10);
+			mty065_heater_control(temper[0], 10);
 		}
 		else if (time < 480) {
-			heaterCtl(temper[0], 15);
+			mty065_heater_control(temper[0], 15);
 		}
 		else {
-			heaterCtl(temper[0], 20);
+			mty065_heater_control(temper[0], 20);
 		}
 		/* Blink the power led */
 		atm88pa_toggle_power_led_state();
@@ -1489,7 +1489,7 @@ static void wait_for_mty065_lm75adp_ready(int bus)
 			printf("The MTY065-B marked \"Working\", Current: %d ℃\n", temper[0]);
 		}
 		else {
-			hearterProcess(bus);
+			mty065_hearter_process(bus);
 		}
 	}
 	/* Reset the power led */
