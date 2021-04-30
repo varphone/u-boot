@@ -1412,6 +1412,61 @@ static void set_mty065_heater_power_on(int status)
 	i2c_set_bus_num(old_bus);
 }
 
+static void heaterCtl(s8 temper, s8 standard)
+{
+	if (temper > standard) {
+		set_mty065_heater_power_on(0);	//停止加热
+	}
+	else if(temper <= standard - 2) {
+		set_mty065_heater_power_on(1);	//加热
+	}
+}
+
+static void heaterProcess(int bus)
+{
+	int ret;
+	s8 temper[2];
+	unsigned int old_bus;
+	ulong time = 0;
+	ulong maxTime = 600;
+	/* Save old bus num */
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(bus);
+	for(time = 0; time < maxTime; time++) {
+		ret  = i2c_read(LM75ADP_I2C_ADDR,
+				LM75ADP_TEMPER_REG, 1, (u8*)temper, 2);
+		if (ret != 0) {
+			printf("Error: Read LM75ADP temperature registers failed, ret = %d\n", ret);
+			break;
+		}
+		if (time < 120) {
+			heaterCtl(temper[0], -10);
+		}
+		else if (time < 240) {
+			heaterCtl(temper[0], 0);
+		}
+		else if (time < 360) {
+			heaterCtl(temper[0], 10);
+		}
+		else if (time < 480) {
+			heaterCtl(temper[0], 15);
+		}
+		else {
+			heaterCtl(temper[0], 20);
+		}
+		/* Blink the power led */
+		atm88pa_toggle_power_led_state();
+		printf("The MTY065-B heater is Warming-Up, Current: %d ℃\n", temper[0]);
+		mdelay(1000);
+	}
+	set_mty065_heater_power_on(0);	//停止加热
+	/* Reset the power led */
+	atm88pa_set_power_led_state(0);
+	/* Restore old bus num */
+	i2c_set_bus_num(old_bus);
+	printf("The MTY065-B heating was complete!\n");
+}
+
 static void wait_for_mty065_lm75adp_ready(int bus)
 {
 	int ret;
@@ -1423,36 +1478,25 @@ static void wait_for_mty065_lm75adp_ready(int bus)
 	old_bus = i2c_get_bus_num();
 
 	i2c_set_bus_num(bus);
-	while (1) {
-		ret  = i2c_read(LM75ADP_I2C_ADDR,
-		                LM75ADP_TEMPER_REG, 1, (u8*)temper, 2);
-		if (ret != 0) {
-			printf("Error: Read LM75ADP temperature registers failed, ret = %d\n", ret);
-			break;
-		}
-
+	ret  = i2c_read(LM75ADP_I2C_ADDR,
+			LM75ADP_TEMPER_REG, 1, (u8*)temper, 2);
+	if (ret != 0) {
+		printf("Error: Read LM75ADP temperature registers failed, ret = %d\n", ret);
+	}
+	else {
 		if (temper[0] > -20) {
 			set_mty065_heater_power_on(0);
 			printf("The MTY065-B marked \"Working\", Current: %d ℃\n", temper[0]);
-			break;
 		}
 		else {
-			set_mty065_heater_power_on(1);
+			hearterProcess(bus);
 		}
-
-		/* Blink the power led */
-		atm88pa_toggle_power_led_state();
-		printf("The MTY065-B is Warming-Up, Current: %d ℃\n", temper[0]);
-		mdelay(1000);
 	}
-
 	/* Reset the power led */
 	atm88pa_set_power_led_state(0);
 
 	/* Restore old bus num */
 	i2c_set_bus_num(old_bus);
-
-	printf("The MTY065-B heating was complete!\n");
 }
 
 static int init_pca9557pw(void)
