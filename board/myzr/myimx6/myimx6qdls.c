@@ -1489,7 +1489,7 @@ static void wait_for_mty065_lm75adp_ready(int bus)
 			printf("The MTY065-B marked \"Working\", Current: %d ℃\n", temper[0]);
 		}
 		else {
-			mty065_hearter_process(bus);
+			mty065_heater_process(bus);
 		}
 	}
 	/* Reset the power led */
