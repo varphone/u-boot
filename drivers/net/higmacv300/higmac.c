@@ -458,6 +458,9 @@ static void higmac_destroy_hw_desc_queue(struct higmac_netdev_local *ld)
 #define PHY_ID_KSZ9031 0x00221620
 #define PHY_ID_MASK    0xFFFFFFF0
 
+#define PHY_ID_RTL8211F 0x001CC916
+#define PHY_ID_MASK_RTL 0x001FFFFF
+
 /* MMD: MDIO Manageable Device */
 #define MACR  0x0D
 #define MAADR 0x0E
@@ -585,6 +588,20 @@ static int phy_fixup(char *devname, unsigned int phyaddr, enum if_mode phymode)
         phy_mmd_read(devname, phyaddr, 0x2, 0x8, &val);
         val = (val & ~0x1F) | 0x1D;
         phy_mmd_write(devname, phyaddr, 0x2, 0x8, val);
+    }
+
+    /* PHY-RTL8211F */
+    if ((phy_id & PHY_ID_MASK_RTL) == PHY_ID_RTL8211F) {
+        short unsigned int val = 0;
+        // printf("TRACE: PHY-RTL8211F=0x%08X, PHY-MODE=%d\n", phy_id, phymode);
+        // Switch to page 0xD08
+        miiphy_write(devname, phyaddr, 0x1F, 0xD08);
+        // Disable TxDelay
+        miiphy_read(devname, phyaddr, 0x11, &val);
+        val |= BIT(8);
+        miiphy_write(devname, phyaddr, 0x11, val);
+        // Switch to page 0
+        miiphy_write(devname, phyaddr, 0x1F, 0);
     }
 
     return 0;
