@@ -205,7 +205,7 @@
  */
 
 /* Assume we boot with root on the seventh partition of eMMC */
-#if defined(CONFIG_PR_SPEC_JYCZ3)
+#if defined(CONFIG_PR_SPEC_JYCZ3) || defined(CONFIG_PR_SPEC_QX1)
 #if defined(CONFIG_EMMC)
 #define BOOTARGS_BASE \
 	"mem=256M console=ttyAMA0,115200n8 clk_ignore_unused"
