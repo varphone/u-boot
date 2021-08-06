@@ -592,6 +592,7 @@ static int phy_fixup(char *devname, unsigned int phyaddr, enum if_mode phymode)
 
     /* PHY-RTL8211F */
     if ((phy_id & PHY_ID_MASK_RTL) == PHY_ID_RTL8211F) {
+#if !defined(CONFIG_PR_SPEC_QX1)
         short unsigned int val = 0;
         // printf("TRACE: PHY-RTL8211F=0x%08X, PHY-MODE=%d\n", phy_id, phymode);
         // Switch to page 0xD08
@@ -602,6 +603,7 @@ static int phy_fixup(char *devname, unsigned int phyaddr, enum if_mode phymode)
         miiphy_write(devname, phyaddr, 0x11, val);
         // Switch to page 0
         miiphy_write(devname, phyaddr, 0x1F, 0);
+#endif
     }
 
     return 0;
@@ -974,6 +976,31 @@ static void higmac_hw_init(void)
     }
 }
 
+#if defined(CONFIG_PR_SPEC_QX1)
+static void rtl8211f_fixup(char* devname, int phyaddr)
+{
+    short unsigned int val = 0;
+
+    // printf("TRACE: PHY-RTL8211F=0x%08X, PHY-MODE=%d\n", phy_id, phymode);
+    // Switch to page 0xD08
+    miiphy_write(devname, phyaddr, 0x1F, 0xD08);
+    // Disable TxDelay
+    miiphy_read(devname, phyaddr, 0x11, &val);
+    val |= BIT(8);
+    miiphy_write(devname, phyaddr, 0x11, val);
+    // Switch to page 0
+    miiphy_write(devname, phyaddr, 0x1F, 0);
+    // Force 100Mbps speed
+    miiphy_read(devname, phyaddr, 0x0, &val);
+    val |= BIT(13); // speed[0] 100Mbps
+    val |= BIT(9); // Restart Auto-Negotiation
+    val |= BIT(8); //  Full Duplex
+    val &= ~BIT(12); // Disable Auto-Negotiation
+    val &= ~BIT(6); // speed[1] 100Mbps
+    miiphy_write(devname, phyaddr, 0x0, val);
+}
+#endif
+
 static int higmac_init(struct eth_device *dev, bd_t *bd)
 {
     struct higmac_netdev_local *ld = (struct higmac_netdev_local *)dev->priv;
@@ -991,6 +1018,10 @@ static int higmac_init(struct eth_device *dev, bd_t *bd)
         }
 
         miiphy_reset(mii_devname, phy_addr);
+
+#if defined(CONFIG_PR_SPEC_QX1)
+        rtl8211f_fixup(mii_devname, phy_addr);
+#endif
 
         if (phy_intf != interface_mode_rgmii) {
             unsigned short val = 0;
