@@ -82,11 +82,26 @@
 
 #include <config_distro_bootcmd.h>
 
+#define RKLASER1_BLINK_LEDS \
+	"blink_leds=gpio set 23; gpio set 15;" \
+	"sleep 0.3;" \
+	"gpio clear 23; gpio clear 15;" \
+	"sleep 0.3;" \
+	"gpio set 23; gpio set 15;" \
+	"sleep 0.3;" \
+	"gpio clear 23; gpio clear 15;" \
+	"sleep 0.3;" \
+	"gpio set 23; gpio set 15;" \
+	"sleep 0.3;" \
+	"gpio clear 23; gpio clear 15;" \
+	"sleep 0.3\0"
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	ENV_MEM_LAYOUT_SETTINGS \
 	"partitions=" PARTS_RKIMG \
 	ROCKCHIP_DEVICE_SETTINGS \
 	RKIMG_DET_BOOTDEV \
+	RKLASER1_BLINK_LEDS \
 	BOOTENV
 #endif
 
